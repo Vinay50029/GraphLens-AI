@@ -1,6 +1,6 @@
 ---
 title: Intelligent Research Assistant
-emoji: �
+emoji: 🤖
 colorFrom: blue
 colorTo: pink
 sdk: streamlit
@@ -20,13 +20,3 @@ A multi-agent application that combines PDF RAG (Retrieval Augmented Generation)
 - **Model**: OpenAI GPT-4o
 - **Search**: Tavily
 
-## Setup
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Add API keys to `.env`.
-3. Run the app:
-   ```bash
-   streamlit run app.py
-   ```

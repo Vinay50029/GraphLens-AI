@@ -23,6 +23,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
 ]
 
@@ -53,11 +54,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # ─── CORS ───────────────────────────────────────────────────────────────────
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',   # Vite dev server
-    'http://127.0.0.1:5173',
-]
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in dev for convenience
+CORS_ALLOW_ALL_ORIGINS = True  # Simplified for initial Free Tier deployment
+# Update to specific origins later if needed:
+# CORS_ALLOWED_ORIGINS = [os.environ.get('FRONTEND_URL')]
 
 # ─── DRF ────────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {

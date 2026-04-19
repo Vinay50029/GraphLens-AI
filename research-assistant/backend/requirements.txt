@@ -2,6 +2,8 @@
 django
 djangorestframework
 django-cors-headers
+gunicorn
+whitenoise
 
 # ─── Environment ────────────────────────────────────────────────────────────
 python-dotenv
@@ -25,7 +27,6 @@ pinecone
 langchain-pinecone
 
 # ─── Embeddings (local, free) ───────────────────────────────────────────────
-sentence-transformers
 
 # ─── PDF Processing ─────────────────────────────────────────────────────────
 pypdf

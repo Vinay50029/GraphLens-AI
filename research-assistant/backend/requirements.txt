@@ -1,0 +1,38 @@
+# ─── Web Interface ──────────────────────────────────────────────────────────
+django
+djangorestframework
+django-cors-headers
+
+# ─── Environment ────────────────────────────────────────────────────────────
+python-dotenv
+
+# ─── AI / LangChain Core ────────────────────────────────────────────────────
+langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+
+# ─── LangGraph ─────────────────────────────────────────────────────────────
+langgraph
+langgraph-prebuilt
+
+# ─── LLM: Groq ──────────────────────────────────────────────────────────────
+langchain-groq
+groq
+
+# ─── Vector DB: Pinecone ────────────────────────────────────────────────────
+pinecone
+langchain-pinecone
+
+# ─── Embeddings (local, free) ───────────────────────────────────────────────
+sentence-transformers
+
+# ─── PDF Processing ─────────────────────────────────────────────────────────
+pypdf
+pymupdf
+
+# ─── Web Search & Scraping ──────────────────────────────────────────────────
+duckduckgo-search
+ddgs
+beautifulsoup4
+requests

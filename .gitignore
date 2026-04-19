@@ -1,16 +1,18 @@
 # Environments
 .env
 .venv
-env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+*/venv/
+*/.env
 
 # Project Data & Vector DB
 data/
 chroma_db/
 *.pdf
+*.sqlite3
 
 # Python caches
 __pycache__/
@@ -24,6 +26,13 @@ nosetests.xml
 coverage.xml
 *.cover
 *.log
+
+# Node.js
+node_modules/
+dist/
+build/
+.npm
+.eslintcache
 
 # OS generated files
 .DS_Store

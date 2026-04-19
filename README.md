@@ -6,6 +6,7 @@
 
 ## 📸 Demo / Preview
 
+<img width="1493" height="883" alt="image" src="https://github.com/user-attachments/assets/ec2e33bc-61c5-4a6d-8ee0-6f4e7bedcd2e" />
 
 ## 🔄 System Flow
 
@@ -58,38 +59,6 @@
 *   **AI Engine**: Groq (Llama-3, Vision-3.2), Gemini
 *   **Database**: Pinecone (Vector Database)
 *   **Deployment**: Vercel (Frontend) & Render (Backend)
-
----
-
-## ⚡ Getting Started
-
-### 1. Prerequisites
-- Python 3.10+, Node.js 18+
-- API Keys: **GROQ_API_KEY**, **PINECONE_API_KEY**
-
-### 2. Backend Setup
-```bash
-cd research-assistant/backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py runserver
-```
-
-### 3. Frontend Setup
-```bash
-cd research-assistant/frontend
-npm install
-npm run dev
-```
-
-### 4. Environment Variables
-Create a `.env` file in the `backend/` folder:
-```env
-GROQ_API_KEY=your_key_here
-PINECONE_API_KEY=your_key_here
-PINECONE_INDEX_NAME=research-assistant
-```
 
 ---
 

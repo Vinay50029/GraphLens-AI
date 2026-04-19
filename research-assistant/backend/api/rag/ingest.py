@@ -74,7 +74,7 @@ def ingest_documents(pdf_path: str, original_file_name: Optional[str] = None) ->
         total_text_len = sum(len(doc.page_content.strip()) for doc in documents)
         is_scanned = total_text_len < 50  # Very little text usually means it's a scan or mostly diagrams
 
-        file_name = original_file_name or os.path.basename(pdf_path)
+        file_name = (original_file_name or os.path.basename(pdf_path)).strip()
         final_docs = _add_file_metadata(documents, file_name)
 
         if is_scanned:

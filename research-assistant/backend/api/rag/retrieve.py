@@ -39,9 +39,9 @@ def get_retriever(file_name: Optional[str] = None):
         return None
 
     try:
-        search_kwargs = {"k": 6}
+        search_kwargs = {"k": 10}
         if file_name:
-            search_kwargs["filter"] = {"file_name": {"$eq": file_name}}
+            search_kwargs["filter"] = {"file_name": {"$eq": file_name.strip()}}
 
         return vectorstore.as_retriever(search_type="mmr", search_kwargs=search_kwargs)
     except Exception as e:

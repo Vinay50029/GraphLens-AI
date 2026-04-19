@@ -1,7 +1,6 @@
-# 🚀 GraphLens AI: Intelligent Research Assistant
+# 🚀 GraphLens AI
 
-**GraphLens AI** is a professional-grade, multi-agent AI research platform that enables users to query both private documents (PDFs) and the live web in a single interface. It bridges the gap between static document analysis and real-time information retrieval.
-
+**GraphLens AI** is an AI-powered research assistant that allows users to analyze PDFs and search the web together in a single platform, making information retrieval faster and smarter.
 ---
 
 ## 📸 Demo / Preview

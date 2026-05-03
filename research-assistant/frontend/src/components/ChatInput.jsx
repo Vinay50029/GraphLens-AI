@@ -27,7 +27,7 @@ export default function ChatInput({ onSend, disabled }) {
     setValue(e.target.value)
     const ta = e.target
     ta.style.height = 'auto'
-    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
+    ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'
   }
 
   return (
@@ -60,11 +60,14 @@ export default function ChatInput({ onSend, disabled }) {
           aria-label="Send message"
           title="Send (Enter)"
         >
-          ➤
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'translateX(-1px) translateY(1px)' }}>
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
         </button>
       </form>
       <p className="chat-input-hint">
-        Press <kbd style={{ background: 'var(--bg-elevated)', padding: '1px 5px', borderRadius: 4, fontSize: 10 }}>Enter</kbd> to send · <kbd style={{ background: 'var(--bg-elevated)', padding: '1px 5px', borderRadius: 4, fontSize: 10 }}>Shift+Enter</kbd> for new line
+        Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line
       </p>
     </div>
   )

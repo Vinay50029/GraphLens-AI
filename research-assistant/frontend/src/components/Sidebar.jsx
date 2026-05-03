@@ -69,7 +69,12 @@ export default function Sidebar({
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">🤖</div>
+        <div className="sidebar-logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a2 2 0 0 1 2 2c-.11.88-.32 1.62-.64 2.2a2 2 0 0 0 1.25 2.87L18 10a2 2 0 1 1-1.42 3.42l-2.6-1.56a2 2 0 0 0-2.82 1.05l-1.07 1.84a2 2 0 1 1-2.92-2.14l1.37-2.38a2 2 0 0 0-1-2.73 2 2 0 0 1-1.34-3.41A2 2 0 0 1 12 2Z"/>
+            <path d="M22 12a10 10 0 1 0-10 10c2.76 0 5-2.24 5-5"/>
+          </svg>
+        </div>
         <div className="sidebar-logo-text">
           <h1>GraphLens AI</h1>
           <span>Powered by Groq + Pinecone</span>
@@ -79,8 +84,11 @@ export default function Sidebar({
       <hr className="sidebar-divider" />
 
       {/* Document Upload Section */}
-      <div>
-        <p className="sidebar-section-title">📄 Document Management</p>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <p className="sidebar-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Document Management
+        </p>
 
         {/* Drop Zone */}
         <div
@@ -109,7 +117,13 @@ export default function Sidebar({
             disabled={atLimit}
             style={{ display: 'none' }}
           />
-          <span className="upload-icon">{atLimit ? '🔒' : '☁️'}</span>
+          <span className="upload-icon">
+            {atLimit ? (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            ) : (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            )}
+          </span>
           {atLimit ? (
             <p>Upload limit reached<br /><span className="upload-hint">({maxUploads}/{maxUploads} PDFs ingested)</span></p>
           ) : (
@@ -122,7 +136,7 @@ export default function Sidebar({
 
         {/* Upload Counter */}
         {!atLimit && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <span className="upload-count-badge">
               <span className="dot" />
               {uploadCount} / {maxUploads} PDFs ingested
@@ -133,7 +147,9 @@ export default function Sidebar({
         {/* Selected File Preview */}
         {selectedFile && (
           <div className="uploaded-file-preview">
-            <span className="file-icon">📄</span>
+            <span className="file-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </span>
             <div className="file-info">
               <div className="file-name" title={selectedFile.name}>{selectedFile.name}</div>
               <div className="file-size">{fileSizeMB} MB</div>
@@ -145,7 +161,7 @@ export default function Sidebar({
               title="Remove file"
               aria-label="Remove file"
             >
-              ✕
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         )}
@@ -154,40 +170,41 @@ export default function Sidebar({
         <button
           id="ingest-btn"
           className="btn btn--primary"
-          style={{ marginTop: 12 }}
+          style={{ marginTop: 16 }}
           onClick={handleIngestClick}
           disabled={!selectedFile || isIngesting || atLimit}
           aria-busy={isIngesting}
         >
           {isIngesting ? (
-            <><span className="spinner" /> Processing into Pinecone…</>
+            <><span className="spinner" /> Processing Document…</>
           ) : (
-            <>⚡ Ingest Document</>
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Ingest to Pinecone
+            </>
           )}
         </button>
 
         {/* Status messages */}
         {ingestStatus && (
-          <div className={`status-msg status-msg--${ingestStatus.type}`} style={{ marginTop: 10 }}>
+          <div className={`status-msg status-msg--${ingestStatus.type}`} style={{ marginTop: 12 }}>
             <span>
-              {ingestStatus.type === 'success' ? '✅' : '❌'}
+              {ingestStatus.type === 'success' ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              )}
             </span>
             <span>{ingestStatus.text}</span>
           </div>
         )}
 
         {ingestedFiles?.length > 0 && (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ marginTop: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <p className="upload-hint" style={{ marginBottom: 0 }}>
-                Active PDF (used for document Q&amp;A):
+                Active Document Context:
               </p>
-              <div className="tooltip-container">
-                <div className="tooltip-trigger">?</div>
-                <div className="tooltip-content">
-                  Tip: If your question is about a different uploaded PDF than the selected one, either select that PDF or ask using its filename (e.g. <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>MyNotes.pdf</span>).
-                </div>
-              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ingestedFiles.map((name) => {
@@ -196,30 +213,27 @@ export default function Sidebar({
                   <button
                     key={name}
                     type="button"
-                    className="btn"
+                    className={`file-list-item ${isActive ? 'file-list-item--active' : ''}`}
                     onClick={() => onSelectActiveDocument?.(name)}
-                    style={{
-                      textAlign: 'left',
-                      border: isActive ? '1px solid rgba(139, 92, 246, 0.65)' : '1px solid var(--border-subtle)',
-                      background: isActive ? 'rgba(139, 92, 246, 0.12)' : 'var(--bg-elevated)',
-                      color: 'var(--text)',
-                      padding: '10px 12px',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                    }}
                     title={name}
                   >
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      {isActive ? 'Selected' : 'Select'}
+                    <div className="file-list-item-icon">
+                      {isActive ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      )}
                     </div>
-                    <div style={{ fontWeight: 600, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {name}
+                    <div className="file-list-item-content">
+                      <div className="file-list-item-title">{name}</div>
+                      <div className="file-list-item-status">
+                        {isActive ? 'Active for Q&A' : 'Click to select'}
+                      </div>
                     </div>
                   </button>
                 )
               })}
             </div>
-
           </div>
         )}
       </div>
@@ -229,26 +243,29 @@ export default function Sidebar({
       {/* System Info Tooltip */}
       <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'center' }}>
         <div className="tooltip-container">
-          <div className="tooltip-trigger" style={{ width: 22, height: 22, fontSize: 13, opacity: 0.7 }}>i</div>
-          <div className="tooltip-content" style={{ width: 260, padding: 14 }}>
-            <p style={{ fontWeight: 600, marginBottom: 8, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              🧠 System Architecture
+          <div className="tooltip-trigger">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div className="tooltip-content">
+            <p style={{ fontWeight: 700, marginBottom: 12, color: 'white', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10Zm0 16a6 6 0 1 1 6-6 6 6 0 0 1-6 6Z"/></svg>
+              System Architecture
             </p>
-            <p style={{ fontSize: 11, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 12 }}>
               A <strong>Supervisor Agent</strong> routes your question automatically:
             </p>
-            <div style={{ marginTop: 10, fontSize: 11, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>📄</span>
-                <span><strong>Document questions</strong> → Pinecone RAG</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span style={{ fontSize: 12, color: 'var(--text-primary)' }}><strong>Document queries</strong><br/><span style={{ color: 'var(--text-muted)' }}>via Pinecone RAG</span></span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🌐</span>
-                <span><strong>Web questions</strong> → DuckDuckGo + Search</span>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2 }}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span style={{ fontSize: 12, color: 'var(--text-primary)' }}><strong>Web queries</strong><br/><span style={{ color: 'var(--text-muted)' }}>via DuckDuckGo Search</span></span>
               </div>
             </div>
-            <p style={{ marginTop: 12, fontSize: 10, pt: 8, borderTop: '1px solid var(--border-subtle)', paddingTop: 8, color: 'var(--text-muted)' }}>
-              Model: <strong>llama3-70b-8192</strong> via Groq
+            <p style={{ marginTop: 16, fontSize: 11, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, color: 'var(--text-muted)' }}>
+              Model: <strong style={{ color: 'var(--text-secondary)' }}>llama3-70b-8192</strong> via Groq
             </p>
           </div>
         </div>

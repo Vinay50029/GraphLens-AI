@@ -5,6 +5,9 @@ django-cors-headers
 gunicorn
 whitenoise
 boto3
+dj-database-url
+psycopg2-binary
+
 
 
 # ─── Environment ────────────────────────────────────────────────────────────

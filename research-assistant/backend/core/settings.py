@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv(BASE_DIR := Path(__file__).resolve().parent.parent / '.env')
 
@@ -60,6 +61,13 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# If DATABASE_URL is provided in environment variables, use it to configure database (PostgreSQL)
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        ssl_require=True
+    )
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

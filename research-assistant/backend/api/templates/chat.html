@@ -59,27 +59,57 @@
             <div id="chat-window" class="chat-window">
                 <!-- Welcome/Intro Card -->
                 <div class="welcome-card" id="welcome-card">
-                    <h3>Welcome to GraphLens AI</h3>
-                    <p>Your research environment is fully isolated and secure. Upload your PDFs, Word documents, or text files, and start asking questions.</p>
+                    <div class="welcome-header">
+                        <div class="brand-badge">GraphLens Research Suite</div>
+                        <h3>Welcome to GraphLens AI</h3>
+                        <p class="project-overview">
+                            GraphLens AI is a secure, isolated workspace that merges 
+                            <strong>Retrieval-Augmented Generation (RAG)</strong>, 
+                            an <strong>Autonomous File Agent</strong>, and <strong>Real-time Web Search</strong>. 
+                            Upload files, write summaries, and let the AI coordinate your tasks.
+                        </p>
+                    </div>
                     
                     <div class="features-grid">
                         <div class="feature-item">
-                            <span class="feature-icon">🔒</span>
-                            <h4>Multi-Tenant Scoping</h4>
-                            <p>Documents you upload are only visible and queried by you.</p>
+                            <div class="feature-title-row">
+                                <span class="feature-icon">📂</span>
+                                <h4>Isolated Document RAG</h4>
+                            </div>
+                            <p>Upload PDFs, Word docs, or Text files. They are indexed in Pinecone and queried only by you in absolute privacy.</p>
                         </div>
                         <div class="feature-item">
-                            <span class="feature-icon">📂</span>
-                            <h4>File Agent Integration</h4>
-                            <p>The AI can create, edit, read, and list files inside your directory.</p>
+                            <div class="feature-title-row">
+                                <span class="feature-icon">🤖</span>
+                                <h4>Autonomous File Agent</h4>
+                            </div>
+                            <p>Ask the assistant to create, edit, or list files in your folder. The AI writes code updates directly into your files.</p>
+                        </div>
+                        <div class="feature-item full-width">
+                            <div class="feature-title-row">
+                                <span class="feature-icon">🔒</span>
+                                <h4>Multi-Tenant Security Scoping</h4>
+                            </div>
+                            <p>Every file upload, database entry, and vector is bound to your user ID, ensuring no other user can access your data.</p>
                         </div>
                     </div>
 
-                    <p class="suggestion-header">Try starting with one of these suggestions:</p>
-                    <div class="suggestions-container">
-                        <button class="suggestion-chip" onclick="applySuggestion('What documents do I have in my workspace?')">What documents do I have?</button>
-                        <button class="suggestion-chip" onclick="applySuggestion('Create a file named research_notes.txt and summarize my workspace')">Create research_notes.txt</button>
-                        <button class="suggestion-chip" onclick="applySuggestion('Search the web for the latest advancements in AI agent platforms')">Search latest AI agents</button>
+                    <div class="suggestions-section">
+                        <p class="suggestion-header">Get Started with a Task:</p>
+                        <div class="suggestions-grid">
+                            <div class="suggestion-action-card" onclick="applySuggestion('What documents do I have in my workspace?')">
+                                <div class="suggestion-action-title">📂 List Workspace Files</div>
+                                <div class="suggestion-action-desc">Check files currently registered in your storage.</div>
+                            </div>
+                            <div class="suggestion-action-card" onclick="applySuggestion('Create a file named research_notes.txt and summarize the latest trends in AI agents')">
+                                <div class="suggestion-action-title">✍️ Write Research Document</div>
+                                <div class="suggestion-action-desc">Direct the File Agent to write a summary report.</div>
+                            </div>
+                            <div class="suggestion-action-card" onclick="applySuggestion('Search the web for the latest advancements in AI agent platforms')">
+                                <div class="suggestion-action-title">🌐 Fetch Web Information</div>
+                                <div class="suggestion-action-desc">Retrieve real-time facts using web search.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -190,8 +190,26 @@ def list_user_files(user_id: int) -> list[str]:
         return []
 
 def get_user_file_url(user_id: int, filename: str) -> str:
-    """Returns the URL path for a user's file (S3 URL if enabled, otherwise local media URL)."""
-    encoded_filename = urllib.parse.quote(filename)
+    """Returns the URL path for a user's file (S3 presigned URL if enabled, otherwise local media URL)."""
     if USE_S3 and AWS_STORAGE_BUCKET_NAME:
-        return f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/users/{user_id}/{encoded_filename}"
+        try:
+            s3 = get_s3_client()
+            s3_key = f"users/{user_id}/{filename}"
+            # Generate a secure presigned URL valid for 1 hour (3600 seconds)
+            url = s3.generate_presigned_url(
+                ClientMethod='get_object',
+                Params={
+                    'Bucket': AWS_STORAGE_BUCKET_NAME,
+                    'Key': s3_key
+                },
+                ExpiresIn=3600
+            )
+            return url
+        except Exception as e:
+            print(f"Failed to generate presigned URL for {filename}: {e}")
+            # Fallback to direct URL if presigned generation fails
+            encoded_filename = urllib.parse.quote(filename)
+            return f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/users/{user_id}/{encoded_filename}"
+
+    encoded_filename = urllib.parse.quote(filename)
     return f"{settings.MEDIA_URL}users/{user_id}/{encoded_filename}"

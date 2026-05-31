@@ -4,6 +4,7 @@ djangorestframework
 django-cors-headers
 gunicorn
 whitenoise
+boto3
 
 
 # ─── Environment ────────────────────────────────────────────────────────────

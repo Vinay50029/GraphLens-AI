@@ -1,10 +1,30 @@
 import os
 import io
+import urllib.parse
 import docx
 import fitz
 from fpdf import FPDF
 from django.conf import settings
 from pathlib import Path
+import boto3
+from botocore.exceptions import ClientError
+
+# --- S3 Configuration ---
+USE_S3 = os.environ.get('USE_S3', 'False').lower() == 'true'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+
+def get_s3_client():
+    if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+        return boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=AWS_REGION
+        )
+    return boto3.client('s3', region_name=AWS_REGION)
 
 def get_user_dir(user_id: int) -> Path:
     """Returns the Path directory for a specific user's files."""
@@ -81,40 +101,97 @@ def write_user_file(user_id: int, filename: str, content) -> int:
     else:
         file_bytes = content
 
+    # Write to local cache
     user_dir = get_user_dir(user_id)
     file_path = user_dir / filename
-    
     with open(file_path, 'wb') as f:
         f.write(file_bytes)
-        
+
+    # Upload to S3 if enabled
+    if USE_S3 and AWS_STORAGE_BUCKET_NAME:
+        try:
+            s3 = get_s3_client()
+            s3_key = f"users/{user_id}/{filename}"
+            s3.put_object(
+                Bucket=AWS_STORAGE_BUCKET_NAME,
+                Key=s3_key,
+                Body=file_bytes
+            )
+        except Exception as e:
+            print(f"Failed to upload to S3 for {filename}: {e}")
+
     return len(file_bytes)
 
 def read_user_file(user_id: int, filename: str) -> bytes:
-    """Reads file content from the user's folder."""
+    """Reads file content from the user's folder (local cache or downloaded from S3)."""
     user_dir = get_user_dir(user_id)
     file_path = user_dir / filename
-    
+
+    # If S3 is enabled and file not in local cache, download from S3
+    if USE_S3 and AWS_STORAGE_BUCKET_NAME and not file_path.exists():
+        try:
+            s3 = get_s3_client()
+            s3_key = f"users/{user_id}/{filename}"
+            response = s3.get_object(Bucket=AWS_STORAGE_BUCKET_NAME, Key=s3_key)
+            file_bytes = response['Body'].read()
+            # Cache it locally
+            with open(file_path, 'wb') as f:
+                f.write(file_bytes)
+        except Exception as e:
+            print(f"Failed to read from S3 for {filename}: {e}")
+            # Fallback to reading local if download failed but file somehow exists
+            if not file_path.exists():
+                raise FileNotFoundError(f"File {filename} not found in S3 or local cache. Error: {e}")
+
     with open(file_path, 'rb') as f:
         return f.read()
 
 def delete_user_file(user_id: int, filename: str):
-    """Deletes a file from the user's folder."""
+    """Deletes a file from the user's folder (local cache and S3)."""
     user_dir = get_user_dir(user_id)
     file_path = user_dir / filename
     if file_path.exists():
-        os.remove(file_path)
+        try:
+            os.remove(file_path)
+        except Exception as e:
+            print(f"Failed to delete local cache file {filename}: {e}")
+
+    if USE_S3 and AWS_STORAGE_BUCKET_NAME:
+        try:
+            s3 = get_s3_client()
+            s3_key = f"users/{user_id}/{filename}"
+            s3.delete_object(Bucket=AWS_STORAGE_BUCKET_NAME, Key=s3_key)
+        except Exception as e:
+            print(f"Failed to delete {filename} from S3: {e}")
 
 def list_user_files(user_id: int) -> list[str]:
-    """Lists the filenames in the user's folder."""
+    """Lists the filenames in the user's folder (from S3 if enabled, otherwise local cache)."""
+    if USE_S3 and AWS_STORAGE_BUCKET_NAME:
+        try:
+            s3 = get_s3_client()
+            prefix = f"users/{user_id}/"
+            response = s3.list_objects_v2(Bucket=AWS_STORAGE_BUCKET_NAME, Prefix=prefix)
+            filenames = []
+            if 'Contents' in response:
+                for obj in response['Contents']:
+                    key = obj['Key']
+                    filename = key[len(prefix):]
+                    if filename:
+                        filenames.append(filename)
+            return filenames
+        except Exception as e:
+            print(f"Failed to list files from S3 for user {user_id}: {e}")
+
+    # Fallback to local
     user_dir = get_user_dir(user_id)
     try:
         return [f for f in os.listdir(user_dir) if os.path.isfile(user_dir / f)]
     except FileNotFoundError:
         return []
 
-import urllib.parse
-
 def get_user_file_url(user_id: int, filename: str) -> str:
-    """Returns the media URL path for a user's file."""
+    """Returns the URL path for a user's file (S3 URL if enabled, otherwise local media URL)."""
     encoded_filename = urllib.parse.quote(filename)
+    if USE_S3 and AWS_STORAGE_BUCKET_NAME:
+        return f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/users/{user_id}/{encoded_filename}"
     return f"{settings.MEDIA_URL}users/{user_id}/{encoded_filename}"

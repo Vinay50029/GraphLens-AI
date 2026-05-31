@@ -1,8 +1,10 @@
 # ─── Web Interface ──────────────────────────────────────────────────────────
 django
 djangorestframework
+django-cors-headers
 gunicorn
 whitenoise
+
 
 # ─── Environment ────────────────────────────────────────────────────────────
 python-dotenv

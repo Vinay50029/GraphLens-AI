@@ -5,7 +5,7 @@
 
 ## 📸 Demo / Preview
 
-<img width="1493" height="883" alt="image" src="https://github.com/user-attachments/assets/ec2e33bc-61c5-4a6d-8ee0-6f4e7bedcd2e" />
+<img width="1498" height="897" alt="image" src="https://github.com/user-attachments/assets/fdbe63ad-414a-4d42-9f7c-ff89669ab2d9" />
 
 ## 🔄 System Flow
 

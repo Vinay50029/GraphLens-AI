@@ -1,5 +1,7 @@
 # Environments
 .env
+.env.local
+.env.*
 .venv
 venv/
 ENV/
@@ -7,12 +9,17 @@ env.bak/
 venv.bak/
 */venv/
 */.env
+*/.env.local
+*/.env.*
 
 # Project Data & Vector DB
 data/
 chroma_db/
 *.pdf
 *.sqlite3
+media/
+*/media/
+**/media/
 
 # Python caches
 __pycache__/

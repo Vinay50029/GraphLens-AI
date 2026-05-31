@@ -6,7 +6,6 @@ from langchain_core.messages import SystemMessage
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
-from bs4 import BeautifulSoup
 
 from api.utils.llm_factory import get_llm
 
@@ -22,57 +21,13 @@ def scrape_website(url: str) -> str:
     Scrapes and returns text content from a given URL.
     Use this when the user provides a specific link to read.
     """
-    # --- SPECIAL CASE: LEETCODE PROFILES ---
-    if "leetcode.com/u/" in url:
-        try:
-            username = url.rstrip('/').split('/')[-1]
-            graphql_url = "https://leetcode.com/graphql/"
-            payload = {
-                "query": """
-                query leetcodeProfileInfo($username: String!) {
-                  matchedUser(username: $username) {
-                    profile { ranking reputation }
-                    submitStatsGlobal {
-                      acSubmissionNum { difficulty count }
-                    }
-                  }
-                }
-                """,
-                "variables": {"username": username},
-                "operationName": "leetcodeProfileInfo"
-            }
-            headers = {"Content-Type": "application/json"}
-            res = requests.post(graphql_url, json=payload, headers=headers).json()
-            user_data = res.get('data', {}).get('matchedUser', {})
-            profile = user_data.get('profile', {}) if user_data else {}
-            stats = user_data.get('submitStatsGlobal', {}).get('acSubmissionNum', []) if user_data else []
-            result = f"LeetCode Profile Data for {username}:\n"
-            result += f"Ranking: {profile.get('ranking')}\nReputation: {profile.get('reputation')}\n"
-            for stat in stats:
-                result += f"{stat.get('difficulty')} Problems Solved: {stat.get('count')}\n"
-            return result
-        except Exception as e:
-            return f"Failed to fetch LeetCode profile: {str(e)}"
-
-    # --- NORMAL WEBSITES ---
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
-        }
-        response = requests.get(url, headers=headers, timeout=10)
+        jina_url = f"https://r.jina.ai/{url}"
+        response = requests.get(jina_url, timeout=15)
         response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        for script in soup(["script", "style"]):
-            script.extract()
-        text = soup.get_text(separator=' ')
-        lines = (line.strip() for line in text.splitlines())
-        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        text = '\n'.join(chunk for chunk in chunks if chunk)
-        return text[:8000]
+        return response.text[:10000]  # Jina Reader returns clean markdown, so we can handle up to 10k chars
     except Exception as e:
-        return f"Failed to scrape the website: {str(e)}"
+        return f"Failed to retrieve website content: {str(e)}"
 
 
 def researcher_node(state: AgentState):
@@ -88,7 +43,7 @@ def researcher_node(state: AgentState):
         history_str = "\n".join([f"{msg.type}: {msg.content}" for msg in history_msgs])
         conversation_history = f"Recent Conversation:\n{history_str}\n"
 
-    llm = get_llm(temperature=0.7)
+    llm = get_llm(temperature=0.0)
     agent_executor = create_react_agent(llm, tools=[search, scrape_website])
 
     system_prompt = SystemMessage(content=f"""You are a helpful AI research assistant.

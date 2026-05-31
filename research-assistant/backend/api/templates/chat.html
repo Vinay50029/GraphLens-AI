@@ -1,0 +1,427 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Research Assistant</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}?v=1.3">
+</head>
+<body>
+    {% csrf_token %}
+    <div class="app-layout">
+        <!-- Left Sidebar: File Manager -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <h2>GraphLens AI</h2>
+                <span class="logo-subtitle">Research Engine</span>
+            </div>
+
+            <div class="user-badge">
+                <span class="username">👤 {{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="logout-link">Log Out</a>
+            </div>
+
+            <div class="section-title">Upload & Ingest Document</div>
+            <div class="upload-box" onclick="document.getElementById('file-input').click()">
+                <label for="file-input">
+                    <svg class="upload-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="upload-text">Click to upload document</p>
+                    <span class="upload-formats">PDF (max 200MB)</span>
+                    <span id="upload-status" class="status-msg"></span>
+                </label>
+                <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this)">
+            </div>
+
+            <div class="section-title">My Documents (Isolated)</div>
+            <div id="file-list-container" class="file-list">
+                <div class="loading-placeholder">Loading documents...</div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <header class="chat-header">
+                <div class="header-info">
+                    <h2>Research Workspace</h2>
+                    <p id="scope-indicator" class="scope-text">Global Search Mode — searching all documents</p>
+                </div>
+                <div class="system-badge">
+                    <span class="live-dot"></span>
+                    <span>Llama 3.1 & Groq RAG</span>
+                </div>
+            </header>
+
+            <div id="chat-window" class="chat-window">
+                <!-- Welcome/Intro Card -->
+                <div class="welcome-card" id="welcome-card">
+                    <h3>Welcome to GraphLens AI</h3>
+                    <p>Your research environment is fully isolated and secure. Upload your PDFs, Word documents, or text files, and start asking questions.</p>
+                    
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <span class="feature-icon">🔒</span>
+                            <h4>Multi-Tenant Scoping</h4>
+                            <p>Documents you upload are only visible and queried by you.</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📂</span>
+                            <h4>File Agent Integration</h4>
+                            <p>The AI can create, edit, read, and list files inside your directory.</p>
+                        </div>
+                    </div>
+
+                    <p class="suggestion-header">Try starting with one of these suggestions:</p>
+                    <div class="suggestions-container">
+                        <button class="suggestion-chip" onclick="applySuggestion('What documents do I have in my workspace?')">What documents do I have?</button>
+                        <button class="suggestion-chip" onclick="applySuggestion('Create a file named research_notes.txt and summarize my workspace')">Create research_notes.txt</button>
+                        <button class="suggestion-chip" onclick="applySuggestion('Search the web for the latest advancements in AI agent platforms')">Search latest AI agents</button>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="chat-footer">
+                <div class="input-container">
+                    <textarea id="chat-input" class="chat-input" placeholder="Type a message or ask about your documents..." rows="1" onkeydown="handleInputKeydown(event)"></textarea>
+                    <button id="send-btn" class="send-btn" onclick="submitUserMessage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        let messageHistory = [];
+        let activeDocument = "";
+        let isAILoading = false;
+
+        // Fetch CSRF token for secure POST calls
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Load files list on startup
+        document.addEventListener("DOMContentLoaded", () => {
+            loadFiles();
+            
+            // Auto-focus input
+            document.getElementById("chat-input").focus();
+        });
+
+        // Load files from Django API
+        async function loadFiles() {
+            const listContainer = document.getElementById("file-list-container");
+            try {
+                const response = await fetch("/api/files/", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || "Failed to load files.");
+
+                listContainer.innerHTML = "";
+                if (!data.files || data.files.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="empty-files">
+                            <p>No documents uploaded yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.files.forEach(file => {
+                    const isActive = activeDocument === file.filename;
+                    const fileItem = document.createElement("div");
+                    fileItem.className = `file-item ${isActive ? 'active' : ''}`;
+                    fileItem.onclick = () => toggleActiveDocument(file.filename);
+
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <span class="file-name" title="${file.filename}">${file.filename}</span>
+                            <span class="file-size">${formatBytes(file.file_size)}</span>
+                        </div>
+                        <div class="file-actions" onclick="event.stopPropagation();">
+                            <a href="${file.url}" target="_blank" class="action-btn view-btn" title="View / Open">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+                            <a href="${file.url}" download class="action-btn download-btn" title="Download">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            <button onclick="deleteFile(${file.id}, '${file.filename}')" class="action-btn delete-btn" title="Delete">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    listContainer.appendChild(fileItem);
+                });
+            } catch (err) {
+                listContainer.innerHTML = `<div class="error-placeholder">Error: ${err.message}</div>`;
+            }
+        }
+
+        // Toggle file as the active context
+        function toggleActiveDocument(filename) {
+            if (activeDocument === filename) {
+                activeDocument = "";
+                document.getElementById("scope-indicator").textContent = "Global Search Mode — searching all documents";
+            } else {
+                activeDocument = filename;
+                document.getElementById("scope-indicator").textContent = `Scoped Search Mode — querying '${filename}'`;
+            }
+            
+            // Update active class on all file items locally to avoid redundant API calls and scroll reset
+            const items = document.querySelectorAll(".file-item");
+            items.forEach(item => {
+                const nameSpan = item.querySelector(".file-name");
+                if (nameSpan) {
+                    const name = nameSpan.textContent.trim();
+                    if (name === activeDocument) {
+                        item.classList.add("active");
+                    } else {
+                        item.classList.remove("active");
+                    }
+                }
+            });
+        }
+
+        // Handle document ingestion via AJAX
+        async function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const statusLabel = document.getElementById("upload-status");
+            statusLabel.textContent = "Uploading & Ingesting...";
+            statusLabel.style.color = "var(--text-secondary)";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch("/api/ingest/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrftoken
+                    },
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || data.message || "Ingestion failed.");
+                }
+
+                statusLabel.textContent = "Uploaded and Vectorized!";
+                statusLabel.style.color = "var(--accent-success)";
+                setTimeout(() => statusLabel.textContent = "", 4000);
+
+                input.value = "";
+                activeDocument = data.file_name || file.name;
+                document.getElementById("scope-indicator").textContent = `Scoped Search Mode — querying '${activeDocument}'`;
+                
+                loadFiles();
+            } catch (err) {
+                statusLabel.textContent = err.message;
+                statusLabel.style.color = "var(--accent-error)";
+            }
+        }
+
+        // Delete file from Django backend
+        async function deleteFile(fileId, filename) {
+            if (!confirm(`Are you sure you want to delete '${filename}'?`)) return;
+
+            try {
+                const response = await fetch(`/api/files/delete/${fileId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken
+                    }
+                });
+                const data = await response.json();
+
+                if (!response.ok) throw new Error(data.error || "Failed to delete file.");
+
+                if (activeDocument === filename) {
+                    activeDocument = "";
+                    document.getElementById("scope-indicator").textContent = "Global Search Mode — searching all documents";
+                }
+                loadFiles();
+            } catch (err) {
+                alert("Error deleting file: " + err.message);
+            }
+        }
+
+        // Handle suggestion chips
+        function applySuggestion(text) {
+            const input = document.getElementById("chat-input");
+            input.value = text;
+            input.style.height = "auto";
+            input.style.height = input.scrollHeight + "px";
+            submitUserMessage();
+        }
+
+        // Keyboard navigation inside input text area
+        function handleInputKeydown(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                submitUserMessage();
+            }
+        }
+
+        // Auto-expand input area
+        const inputArea = document.getElementById("chat-input");
+        inputArea.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = this.scrollHeight + "px";
+        });
+
+        // Submit user message
+        async function submitUserMessage() {
+            const input = document.getElementById("chat-input");
+            const text = input.value.trim();
+            if (!text || isAILoading) return;
+
+            // Clear input and reset height
+            input.value = "";
+            input.style.height = "auto";
+
+            // Hide welcome card
+            const welcomeCard = document.getElementById("welcome-card");
+            if (welcomeCard) welcomeCard.style.display = "none";
+
+            // Append user message bubble
+            appendMessageBubble("user", text);
+
+            messageHistory.push({ role: "user", content: text });
+            isAILoading = true;
+            const typingIndicatorId = appendTypingIndicator();
+
+            try {
+                const response = await fetch("/api/chat/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken
+                    },
+                    body: JSON.stringify({
+                        messages: messageHistory,
+                        active_document: activeDocument
+                    })
+                });
+                const data = await response.json();
+                
+                removeTypingIndicator(typingIndicatorId);
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to receive response from assistant.");
+                }
+
+                // Append assistant bubble
+                appendMessageBubble("assistant", data.content);
+                messageHistory.push({ role: "assistant", content: data.content });
+                
+                // Refresh sidebar files list in case the AI created/deleted files
+                loadFiles();
+            } catch (err) {
+                removeTypingIndicator(typingIndicatorId);
+                appendMessageBubble("assistant", `⚠️ Error: ${err.message}`);
+            } finally {
+                isAILoading = false;
+            }
+        }
+
+        // Render message bubbles with basic markdown support
+        function appendMessageBubble(role, text) {
+            const chatWindow = document.getElementById("chat-window");
+            const msg = document.createElement("div");
+            msg.className = `message ${role}`;
+
+            const formattedText = formatMarkdown(text);
+            msg.innerHTML = `<div class="message-content">${formattedText}</div>`;
+            chatWindow.appendChild(msg);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Append typing indicator
+        function appendTypingIndicator() {
+            const chatWindow = document.getElementById("chat-window");
+            const indicator = document.createElement("div");
+            const id = "typing-" + Date.now();
+            indicator.id = id;
+            indicator.className = "message assistant";
+            indicator.innerHTML = `
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                    </div>
+                </div>
+            `;
+            chatWindow.appendChild(indicator);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return id;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator(id) {
+            const indicator = document.getElementById(id);
+            if (indicator) indicator.remove();
+        }
+
+        // Format Markdown to HTML safely
+        function formatMarkdown(text) {
+            if (!text) return "";
+            let html = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // Format code blocks
+            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+            // Format inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Format bold text
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // Format bullet points
+            html = html.replace(/^\s*-\s+(.+)/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Format line breaks
+            html = html.replace(/\n/g, '<br>');
+
+            return html;
+        }
+
+        // Format bytes utility
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

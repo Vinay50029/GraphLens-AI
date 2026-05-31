@@ -30,7 +30,7 @@ def get_vectorstore():
         return None
 
 
-def get_retriever(file_name: Optional[str] = None):
+def get_retriever(user_id: int, file_name: Optional[str] = None):
     """
     Initializes and returns a Pinecone retriever using Integrated Embeddings.
     """
@@ -40,8 +40,13 @@ def get_retriever(file_name: Optional[str] = None):
 
     try:
         search_kwargs = {"k": 10}
+        
+        # Enforce user separation metadata filter
+        filters = {"user_id": {"$eq": user_id}}
         if file_name:
-            search_kwargs["filter"] = {"file_name": {"$eq": file_name.strip()}}
+            filters["file_name"] = {"$eq": file_name.strip()}
+            
+        search_kwargs["filter"] = filters
 
         return vectorstore.as_retriever(search_type="mmr", search_kwargs=search_kwargs)
     except Exception as e:

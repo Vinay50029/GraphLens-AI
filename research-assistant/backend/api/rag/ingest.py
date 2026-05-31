@@ -1,144 +1,77 @@
 import os
-import base64
-import time
 from typing import Optional
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore, PineconeEmbeddings
 from langchain_core.documents import Document
-from dotenv import load_dotenv
-
-# Local utility
-from api.utils.vision_ocr import process_image_with_groq_vision
-
-load_dotenv()
 
 PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.environ.get("PINECONE_INDEX_NAME", "research-assistant")
 
-# Embedding dimension for "llama-text-embed-v2"
-EMBEDDING_MODEL = "llama-text-embed-v2"
-EMBEDDING_DIMENSION = 1024
 
-
-def get_embeddings():
-    """Returns the Pinecone Integrated embedding model instance."""
-    return PineconeEmbeddings(model=EMBEDDING_MODEL, pinecone_api_key=PINECONE_API_KEY)
-
-
-def ensure_pinecone_index():
-    """Creates the Pinecone index if it doesn't already exist."""
-    pc = Pinecone(api_key=PINECONE_API_KEY)
-    existing_indexes = [idx.name for idx in pc.list_indexes()]
-    if PINECONE_INDEX_NAME not in existing_indexes:
-        print(f"Creating Pinecone index '{PINECONE_INDEX_NAME}'...")
-        pc.create_index(
-            name=PINECONE_INDEX_NAME,
-            dimension=EMBEDDING_DIMENSION,
-            metric="cosine",
-            spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-        )
-        print("Index created successfully.")
-    else:
-        print(f"Pinecone index '{PINECONE_INDEX_NAME}' already exists.")
-    return pc.Index(PINECONE_INDEX_NAME)
-
-
-def _add_file_metadata(documents: list[Document], file_name: str) -> list[Document]:
-    """Annotate each document chunk with original filename for retrieval filtering."""
-    enriched_docs = []
-    for doc in documents:
-        metadata = dict(doc.metadata or {})
-        metadata["file_name"] = file_name
-        enriched_docs.append(Document(page_content=doc.page_content, metadata=metadata))
-    return enriched_docs
-
-
-def ingest_documents(pdf_path: str, original_file_name: Optional[str] = None) -> dict:
-    """
-    Loads a PDF. If it's a scan (no text), it uses Groq Vision OCR as a fallback.
-    """
+def ingest_documents(pdf_path: str, user_id: int, original_file_name: Optional[str] = None) -> dict:
+    """Loads a document (Text, Word, or PDF), splits it, and uploads to Pinecone."""
     if not PINECONE_API_KEY:
-        return {"success": False, "message": "PINECONE_API_KEY is not set in your .env file."}
+        return {"success": False, "message": "PINECONE_API_KEY is not set."}
 
     try:
-        # 1. Load with PyMuPDF
-        loader = PyMuPDFLoader(pdf_path)
-        documents = loader.load()
-
-        if not documents:
-            return {"success": False, "message": "Could not extract any pages from the PDF."}
-
-        # 2. Check for text
-        total_text_len = sum(len(doc.page_content.strip()) for doc in documents)
-        is_scanned = total_text_len < 50  # Very little text usually means it's a scan or mostly diagrams
-
         file_name = (original_file_name or os.path.basename(pdf_path)).strip()
-        final_docs = _add_file_metadata(documents, file_name)
+        
+        # Purge existing chunks for this user and file to avoid duplicate/stale vectors
+        delete_document_index(user_id, file_name)
+        
+        ext = file_name.lower().split('.')[-1]
 
-        if is_scanned:
-            print("PDF appears to be a scan or image-based. Switching to Groq Vision OCR fallback...")
-            # We need to re-open with fitz directly to get images
-            import fitz
-            doc = fitz.open(pdf_path)
-            vision_transcriptions = []
+        # 1. Load document text
+        if ext == "txt":
+            with open(pdf_path, 'r', encoding='utf-8', errors='ignore') as f:
+                docs = [Document(page_content=f.read())]
+        elif ext in ("docx", "doc"):
+            from api.utils.storage import convert_docx_to_text
+            with open(pdf_path, 'rb') as f:
+                docs = [Document(page_content=convert_docx_to_text(f.read()))]
+        elif ext == "pdf":
+            docs = PyMuPDFLoader(pdf_path).load()
+        else:
+            return {"success": False, "message": "Unsupported file format."}
 
-            for i, page in enumerate(doc):
-                print(f"Vision-processing page {i+1}/{len(doc)}...")
-                # Render page to high-res image
-                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-                img_data = pix.tobytes("png")
-                base64_img = base64.b64encode(img_data).decode('utf-8')
+        # 2. Add metadata (so each chunk knows its source file and user ownership)
+        for doc in docs:
+            doc.metadata.update({"file_name": file_name, "user_id": user_id})
 
-                # Call Groq Vision
-                transcription = process_image_with_groq_vision(base64_img)
-                vision_transcriptions.append(
-                    Document(
-                        page_content=transcription,
-                        metadata={
-                            "page": i + 1,
-                            "source": pdf_path,
-                            "method": "groq-vision-ocr",
-                            "file_name": file_name,
-                        }
-                    )
-                )
-                # Small sleep to be kind to rate limits
-                time.sleep(0.5)
+        # 3. Split the text into smaller chunks
+        splits = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200).split_documents(docs)
 
-            final_docs = vision_transcriptions
-            doc.close()
+        # 4. Create Pinecone Index if it does not exist
+        pc = Pinecone(api_key=PINECONE_API_KEY)
+        if PINECONE_INDEX_NAME not in [idx.name for idx in pc.list_indexes()]:
+            pc.create_index(
+                name=PINECONE_INDEX_NAME,
+                dimension=1024,
+                metric="cosine",
+                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+            )
 
-        # 3. Split and Ingest
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
-        )
-        splits = text_splitter.split_documents(final_docs)
+        # 5. Upload chunks to Pinecone Vector DB
+        embeddings = PineconeEmbeddings(model="llama-text-embed-v2", pinecone_api_key=PINECONE_API_KEY)
+        PineconeVectorStore.from_documents(splits, embeddings, index_name=PINECONE_INDEX_NAME)
 
-        if not splits:
-            return {"success": False, "message": "No content could be extracted even with Vision OCR fallback."}
-
-        ensure_pinecone_index()
-
-        embeddings = get_embeddings()
-        PineconeVectorStore.from_documents(
-            documents=splits,
-            embedding=embeddings,
-            index_name=PINECONE_INDEX_NAME,
-            pinecone_api_key=PINECONE_API_KEY,
-        )
-
-        method_text = "Vision OCR" if is_scanned else "Text Extraction"
-        return {
-            "success": True,
-            "message": f"Successfully ingested {len(splits)} chunks from {len(documents)} pages (via {method_text}).",
-            "chunks": len(splits),
-            "pages": len(documents),
-            "file_name": file_name,
-        }
+        return {"success": True, "message": f"Successfully ingested {len(splits)} chunks.", "chunks": len(splits)}
 
     except Exception as e:
-        print(f"Ingestion error: {e}")
         return {"success": False, "message": f"Ingestion failed: {str(e)}"}
+
+
+def delete_document_index(user_id: int, file_name: str) -> bool:
+    """Deletes all chunks for a specific file and user from Pinecone."""
+    if not PINECONE_API_KEY:
+        return False
+    try:
+        pc = Pinecone(api_key=PINECONE_API_KEY)
+        index = pc.Index(PINECONE_INDEX_NAME)
+        index.delete(filter={"user_id": user_id, "file_name": file_name.strip()})
+        return True
+    except Exception as e:
+        print(f"Failed to delete index for {file_name}: {e}")
+        return False

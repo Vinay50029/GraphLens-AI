@@ -467,16 +467,16 @@ body {
 }
 
 .welcome-card {
-    background: linear-gradient(145deg, rgba(13, 17, 34, 0.65) 0%, rgba(8, 10, 22, 0.5) 100%);
+    background: linear-gradient(145deg, rgba(17, 21, 40, 0.96) 0%, rgba(10, 12, 26, 0.96) 100%);
     backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(99, 102, 241, 0.3); /* Subtle indigo top glow */
+    border: 1px solid rgba(255, 255, 255, 0.12); /* Brighter border to outline card */
+    border-top: 1px solid rgba(99, 102, 241, 0.5); /* Stronger top glow */
     border-radius: 16px;
     padding: 1.5rem 1.75rem;
     max-width: 680px;
     width: 90%;
     margin: 1.5rem auto;
-    box-shadow: var(--card-shadow), 0 0 30px rgba(99, 102, 241, 0.02);
+    box-shadow: var(--card-shadow), 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 40px rgba(99, 102, 241, 0.04);
     animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) ease-out;
 }
 
@@ -487,15 +487,15 @@ body {
 
 .brand-badge {
     display: inline-block;
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.35);
     border-radius: 30px;
-    color: #a5b4fc;
+    color: #c7d2fe;
     font-size: 0.68rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 0.2rem 0.6rem;
+    padding: 0.2rem 0.65rem;
     margin-bottom: 0.5rem;
 }
 
@@ -509,7 +509,7 @@ body {
 }
 
 .project-overview {
-    color: var(--text-secondary);
+    color: #d1d5db; /* Lighter text color for better contrast */
     font-size: 0.88rem;
     line-height: 1.5;
     max-width: 600px;
@@ -518,7 +518,7 @@ body {
 
 .project-overview strong {
     color: #c7d2fe;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .features-grid {
@@ -529,28 +529,28 @@ body {
 }
 
 .feature-item {
-    background: rgba(255, 255, 255, 0.015);
-    border: 1px solid var(--border-color);
+    background: rgba(7, 9, 19, 0.5); /* Recessed darker panel background */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Distinct border */
     border-radius: 10px;
     padding: 0.85rem 1rem;
     transition: all 0.25s ease;
 }
 
 .feature-item:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(99, 102, 241, 0.2);
+    background: rgba(7, 9, 19, 0.7);
+    border-color: rgba(99, 102, 241, 0.35);
     transform: translateY(-1px);
 }
 
 .feature-item.full-width {
     grid-column: span 2;
-    background: rgba(99, 102, 241, 0.01);
-    border-color: rgba(99, 102, 241, 0.1);
+    background: rgba(99, 102, 241, 0.02); /* Tinted full-width item */
+    border-color: rgba(99, 102, 241, 0.2);
 }
 
 .feature-item.full-width:hover {
-    background: rgba(99, 102, 241, 0.02);
-    border-color: rgba(99, 102, 241, 0.25);
+    background: rgba(99, 102, 241, 0.04);
+    border-color: rgba(99, 102, 241, 0.35);
 }
 
 .feature-title-row {
@@ -570,12 +570,12 @@ body {
 .feature-item h4 {
     font-size: 0.88rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #f3f4f6;
 }
 
 .feature-item p {
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    color: #9ca3af;
     line-height: 1.4;
     margin-bottom: 0 !important;
 }
@@ -588,7 +588,7 @@ body {
 .suggestion-header {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #f3f4f6;
     margin-bottom: 0.75rem !important;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -601,8 +601,8 @@ body {
 }
 
 .suggestion-action-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
+    background: rgba(7, 9, 19, 0.5); /* Recessed dark panels */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Clear border */
     border-radius: 10px;
     padding: 0.75rem 0.85rem;
     cursor: pointer;
@@ -611,10 +611,10 @@ body {
 }
 
 .suggestion-action-card:hover {
-    background: rgba(99, 102, 241, 0.04);
+    background: rgba(99, 102, 241, 0.08); /* Highlight on hover */
     border-color: var(--accent-primary);
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.06);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
 }
 
 .suggestion-action-title {
@@ -626,7 +626,7 @@ body {
 
 .suggestion-action-desc {
     font-size: 0.72rem;
-    color: var(--text-secondary);
+    color: #9ca3af;
     line-height: 1.35;
 }
 

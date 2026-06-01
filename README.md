@@ -9,9 +9,9 @@
 
 ## 🔄 System Flow
 
-1.  **Ingestion**: User uploads a PDF. The backend extracts text or uses **Vision-OCR** for scanned docs.
+1.  **Ingestion**: User uploads a PDF, Word, or Text document. The backend extracts and parses the text.
 2.  **Indexing**: Content is chunked and embedded into **Pinecone** with file-specific metadata.
-3.  **User Query**: The user asks a question in the **React** interface.
+3.  **User Query**: The user asks a question in the web chat interface.
 4.  **Supervision**: The **LangGraph Supervisor** analyzes the query intent.
 5.  **Agency Execution**: 
     *   *Route A*: **Document Agent** performs a similarity search in Pinecone.
@@ -32,10 +32,6 @@
 *   **Pinecone (Serverless)**: High-speed vector search for large document sets.
 *   **MMR (Maximum Marginal Relevance)**: Ensures diverse retrieval results without duplication.
 
-### 🖼️ Multimodal OCR (Vision AI)
-*   **Vision-Integrated Fallback**: Powered by **Groq Llama 3.2 Vision**.
-*   **Image Ingestion**: Automatically detects scanned/image-based PDFs, renders pages, and extracts high-accuracy text, tables, and chart descriptions.
-
 ### 🌐 Real-Time Web Research Agent
 *   **Live Web Browsing**: Real-time information retrieval using the DuckDuckGo API.
 *   **Deep Scraper**: Extracts full-page content from URLs using BeautifulSoup.
@@ -52,12 +48,12 @@
 ---
 
 ## 🛠️ Tech Stack
-*   **Frontend**: React (Vite) + Vanilla CSS (Modern Design)
+*   **Frontend**: HTML5 + Vanilla JS & CSS (Modern Theme)
 *   **Backend**: Django & Django REST Framework (DRF)
 *   **Orchestration**: LangChain & LangGraph
-*   **AI Engine**: Groq (Llama-3, Vision-3.2), Gemini
+*   **AI Engine**: Groq (Llama-3), Gemini
 *   **Database**: Pinecone (Vector Database)
-*   **Deployment**: Vercel (Frontend) & Render (Backend)
+*   **Deployment**: Render
 
 ---
 

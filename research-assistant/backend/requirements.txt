@@ -1,7 +1,6 @@
 # ─── Web Interface ──────────────────────────────────────────────────────────
 django
 djangorestframework
-django-cors-headers
 gunicorn
 whitenoise
 boto3

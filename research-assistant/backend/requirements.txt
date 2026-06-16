@@ -36,4 +36,5 @@ fpdf2
 
 # ─── Web Search & Scraping ──────────────────────────────────────────────────
 duckduckgo-search
+ddgs
 requests

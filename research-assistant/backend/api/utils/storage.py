@@ -1,9 +1,6 @@
 import os
 import io
 import urllib.parse
-import docx
-import fitz
-from fpdf import FPDF
 from django.conf import settings
 from pathlib import Path
 import boto3
@@ -36,6 +33,7 @@ def get_user_dir(user_id: int) -> Path:
 
 def convert_text_to_docx(text: str) -> bytes:
     """Creates a valid .docx binary from plain text."""
+    import docx
     doc = docx.Document()
     for line in text.split('\n'):
         doc.add_paragraph(line)
@@ -46,6 +44,7 @@ def convert_text_to_docx(text: str) -> bytes:
 
 def convert_docx_to_text(file_bytes: bytes) -> str:
     """Extracts raw text from a .docx binary."""
+    import docx
     doc = docx.Document(io.BytesIO(file_bytes))
     fullText = []
     for para in doc.paragraphs:
@@ -56,6 +55,7 @@ def convert_docx_to_text(file_bytes: bytes) -> str:
 
 def convert_text_to_pdf(text: str) -> bytes:
     """Creates a valid .pdf binary from plain text using fpdf2."""
+    from fpdf import FPDF
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=12)
@@ -64,6 +64,7 @@ def convert_text_to_pdf(text: str) -> bytes:
 
 def convert_pdf_to_text(file_bytes: bytes) -> str:
     """Extracts raw text from a .pdf binary using PyMuPDF."""
+    import fitz
     try:
         doc = fitz.open(stream=file_bytes, filetype="pdf")
         text = []

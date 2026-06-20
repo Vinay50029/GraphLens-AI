@@ -30,7 +30,6 @@ langchain-pinecone
 # ─── Embeddings (local, free) ───────────────────────────────────────────────
 
 # ─── PDF and Document Processing ────────────────────────────────────────────
-python-docx
 pymupdf
 fpdf2
 

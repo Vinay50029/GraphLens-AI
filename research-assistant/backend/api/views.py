@@ -171,7 +171,7 @@ def chat(request):
 @parser_classes([MultiPartParser, FormParser])
 def ingest(request):
     """
-    Accepts a PDF, Word (.doc/.docx), or Text (.txt) upload, embeds/indexes it in Pinecone,
+    Accepts a PDF (.pdf) upload, embeds/indexes it in Pinecone,
     saves the file to standard user storage, and registers it in the DB.
     """
     uploaded_file = request.FILES.get("file")

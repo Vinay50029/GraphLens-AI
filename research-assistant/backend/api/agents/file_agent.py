@@ -77,7 +77,7 @@ def create_file(filename: str, content: str, config: RunnableConfig) -> str:
         user_file.save()
         
         # Auto-ingest to Pinecone
-        if filename.lower().endswith((".txt", ".docx", ".doc", ".pdf")):
+        if filename.lower().endswith((".txt", ".pdf")):
             try:
                 from api.utils.storage import get_user_dir
                 ingest_documents(str(get_user_dir(user.id) / filename), user_id=user.id, original_file_name=filename)
@@ -104,10 +104,7 @@ def read_file(filename: str, config: RunnableConfig) -> str:
         content_bytes = read_user_file(user.id, filename)
         
         # Parse based on file type
-        if filename.lower().endswith(('.docx', '.doc')):
-            from api.utils.storage import convert_docx_to_text
-            text = convert_docx_to_text(content_bytes)
-        elif filename.lower().endswith('.pdf'):
+        if filename.lower().endswith('.pdf'):
             from api.utils.storage import convert_pdf_to_text
             text = convert_pdf_to_text(content_bytes)
             if len(text) > 10000:
@@ -137,10 +134,7 @@ def update_file(filename: str, content: str, mode: str, config: RunnableConfig) 
         if mode == 'append':
             try:
                 content_bytes = read_user_file(user.id, filename)
-                if filename.lower().endswith(('.docx', '.doc')):
-                    from api.utils.storage import convert_docx_to_text
-                    existing_content = convert_docx_to_text(content_bytes)
-                elif filename.lower().endswith('.pdf'):
+                if filename.lower().endswith('.pdf'):
                     from api.utils.storage import convert_pdf_to_text
                     existing_content = convert_pdf_to_text(content_bytes)
                 else:
@@ -156,7 +150,7 @@ def update_file(filename: str, content: str, mode: str, config: RunnableConfig) 
         user_file.save()
         
         # Auto-ingest to Pinecone
-        if filename.lower().endswith((".txt", ".docx", ".doc", ".pdf")):
+        if filename.lower().endswith((".txt", ".pdf")):
             try:
                 from api.utils.storage import get_user_dir
                 ingest_documents(str(get_user_dir(user.id) / filename), user_id=user.id, original_file_name=filename)

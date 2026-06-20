@@ -22,7 +22,7 @@ def document_node(state: AgentState):
     active_document = (state.get("active_document") or "").strip() or None
     
     # 1. Detect if the user named an explicit file name in the question
-    filename_match = re.search(r"([\w\-. ]+\.(?:pdf|docx|doc|txt))\b", question, flags=re.IGNORECASE)
+    filename_match = re.search(r"([\w\-. ]+\.(?:pdf|txt))\b", question, flags=re.IGNORECASE)
     explicit_file_name = filename_match.group(1).strip() if filename_match else None
     
     scoped_file_name = explicit_file_name or active_document

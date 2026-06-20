@@ -29,28 +29,6 @@ def get_user_dir(user_id: int) -> Path:
     os.makedirs(user_dir, exist_ok=True)
     return user_dir
 
-# --- Word Document Binary Conversion Helpers ---
-
-def convert_text_to_docx(text: str) -> bytes:
-    """Creates a valid .docx binary from plain text."""
-    import docx
-    doc = docx.Document()
-    for line in text.split('\n'):
-        doc.add_paragraph(line)
-    
-    file_stream = io.BytesIO()
-    doc.save(file_stream)
-    return file_stream.getvalue()
-
-def convert_docx_to_text(file_bytes: bytes) -> str:
-    """Extracts raw text from a .docx binary."""
-    import docx
-    doc = docx.Document(io.BytesIO(file_bytes))
-    fullText = []
-    for para in doc.paragraphs:
-        fullText.append(para.text)
-    return '\n'.join(fullText)
-
 # --- PDF Document Binary Conversion Helpers ---
 
 def convert_text_to_pdf(text: str) -> bytes:
@@ -80,19 +58,12 @@ def convert_pdf_to_text(file_bytes: bytes) -> str:
 def write_user_file(user_id: int, filename: str, content) -> int:
     """
     Writes file content (str or bytes) to user's folder.
-    Automatically converts text to valid Word .docx binary if filename is .doc/.docx.
     Automatically converts text to valid PDF binary if filename is .pdf.
     Returns: file size in bytes.
     """
-    is_word_doc = filename.lower().endswith(('.docx', '.doc'))
     is_pdf_doc = filename.lower().endswith('.pdf')
 
-    if is_word_doc and isinstance(content, str):
-        try:
-            file_bytes = convert_text_to_docx(content)
-        except Exception:
-            file_bytes = content.encode('utf-8')
-    elif is_pdf_doc and isinstance(content, str):
+    if is_pdf_doc and isinstance(content, str):
         try:
             file_bytes = convert_text_to_pdf(content)
         except Exception:

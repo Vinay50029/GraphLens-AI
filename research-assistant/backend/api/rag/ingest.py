@@ -27,14 +27,10 @@ def ingest_documents(pdf_path: str, user_id: int, original_file_name: Optional[s
         if ext == "txt":
             with open(pdf_path, 'r', encoding='utf-8', errors='ignore') as f:
                 docs = [Document(page_content=f.read())]
-        elif ext in ("docx", "doc"):
-            from api.utils.storage import convert_docx_to_text
-            with open(pdf_path, 'rb') as f:
-                docs = [Document(page_content=convert_docx_to_text(f.read()))]
         elif ext == "pdf":
             docs = PyMuPDFLoader(pdf_path).load()
         else:
-            return {"success": False, "message": "Unsupported file format."}
+            return {"success": False, "message": "Unsupported file format. Only PDF and TXT are supported."}
 
         # 2. Add metadata (so each chunk knows its source file and user ownership)
         for doc in docs:

@@ -34,7 +34,7 @@
                     <span class="upload-formats">PDF (max 200MB)</span>
                     <span id="upload-status" class="status-msg"></span>
                 </label>
-                <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this)">
+                <input type="file" id="file-input" style="display: none;" accept=".pdf" onchange="handleFileUpload(this)">
             </div>
 
             <div class="section-title">My Documents (Isolated)</div>
@@ -265,6 +265,15 @@
             if (!file) return;
 
             const statusLabel = document.getElementById("upload-status");
+
+            // Client-side PDF check
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                statusLabel.textContent = "Only PDF files (.pdf) are supported.";
+                statusLabel.style.color = "var(--accent-error)";
+                input.value = ""; // Reset input selection
+                return;
+            }
+
             statusLabel.textContent = "Uploading & Ingesting...";
             statusLabel.style.color = "var(--text-secondary)";
 

@@ -43,7 +43,7 @@ def _looks_like_file_query(question: str) -> bool:
     q = question.lower()
     
     # 1. Action verb + File extension (e.g. "create notes.txt")
-    has_ext = any(ext in q for ext in [".txt", ".docx", ".doc", ".pdf"])
+    has_ext = any(ext in q for ext in [".txt", ".pdf"])
     file_actions = ["create", "write", "save", "delete", "remove", "read", "view", "update", "edit", "make", "list", "append", "add", "overwrite"]
     if has_ext and any(action in q for action in file_actions):
         return True

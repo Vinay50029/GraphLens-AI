@@ -182,11 +182,11 @@ def ingest(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    allowed_exts = (".pdf", ".docx", ".doc", ".txt")
+    allowed_exts = (".pdf",)
     filename_lower = uploaded_file.name.lower()
     if not filename_lower.endswith(allowed_exts):
         return Response(
-            {"error": "Only PDF, Word (.doc, .docx), and Text (.txt) files are supported for Q&A ingestion."},
+            {"error": "Only PDF files (.pdf) are supported for Q&A ingestion."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -267,6 +267,9 @@ def upload_file_api(request):
     uploaded_file = request.FILES.get("file")
     if not uploaded_file:
         return Response({"error": "No file uploaded in 'file' field"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    if not uploaded_file.name.lower().endswith('.pdf'):
+        return Response({"error": "Only PDF files (.pdf) are allowed for upload."}, status=status.HTTP_400_BAD_REQUEST)
         
     try:
         content = uploaded_file.read()

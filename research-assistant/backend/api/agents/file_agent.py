@@ -71,6 +71,11 @@ def create_file(filename: str, content: str, config: RunnableConfig) -> str:
     try:
         original_filename = filename
         user, filename = _get_user_and_filename(config, filename)
+        
+        allowed_extensions = (".pdf", ".txt")
+        if not filename.lower().endswith(allowed_extensions):
+            return f"Error: Invalid file extension. Only PDF (.pdf) and text (.txt) files are supported in this workspace."
+            
         user_file, created = UserFile.objects.get_or_create(user=user, filename=filename)
         size = write_user_file(user.id, filename, content)
         user_file.file_size = size
@@ -98,6 +103,11 @@ def read_file(filename: str, config: RunnableConfig) -> str:
     try:
         original_filename = filename
         user, filename = _get_user_and_filename(config, filename)
+        
+        allowed_extensions = (".pdf", ".txt")
+        if not filename.lower().endswith(allowed_extensions):
+            return f"Error: Invalid file extension. Only PDF (.pdf) and text (.txt) files are supported in this workspace."
+            
         if not UserFile.objects.filter(user=user, filename=filename).exists():
             return f"File '{filename}' does not exist."
             
@@ -126,6 +136,11 @@ def update_file(filename: str, content: str, mode: str, config: RunnableConfig) 
     try:
         original_filename = filename
         user, filename = _get_user_and_filename(config, filename)
+        
+        allowed_extensions = (".pdf", ".txt")
+        if not filename.lower().endswith(allowed_extensions):
+            return f"Error: Invalid file extension. Only PDF (.pdf) and text (.txt) files are supported in this workspace."
+            
         query = UserFile.objects.filter(user=user, filename=filename)
         if not query.exists():
             return f"File '{filename}' does not exist. Create it first."
@@ -233,6 +248,7 @@ def file_node(state: AgentState):
 
     system_prompt = SystemMessage(content=f"""You are a helpful AI file assistant for user '{user.username}'.{active_doc_prompt}
 You have tools to create, read, update, delete, and list the user's files.
+Only PDF (.pdf) and text (.txt) files are supported in this workspace. Word documents (.doc, .docx) and other formats are not supported.
 Perform ONLY the specific operation requested by the user. Do not call any tools that are not directly requested.
 Once you obtain the result from the tool, explain it to the user and stop. Do NOT call any more tools.
 """)

@@ -31,13 +31,31 @@ def get_user_dir(user_id: int) -> Path:
 
 # --- PDF Document Binary Conversion Helpers ---
 
+def clean_text_for_pdf(text: str) -> str:
+    """Replaces common non-latin1/non-ascii characters with safe equivalents."""
+    replacements = {
+        "\u2018": "'",   # Left single quote
+        "\u2019": "'",   # Right single quote
+        "\u201c": '"',   # Left double quote
+        "\u201d": '"',   # Right double quote
+        "\u2013": "-",   # En dash
+        "\u2014": "-",   # Em dash
+        "\u2022": "*",   # Bullet point
+        "\u2026": "...", # Ellipsis
+        "\xa0": " ",     # Non-breaking space
+    }
+    for orig, repl in replacements.items():
+        text = text.replace(orig, repl)
+    return text.encode('latin-1', errors='ignore').decode('latin-1')
+
 def convert_text_to_pdf(text: str) -> bytes:
     """Creates a valid .pdf binary from plain text using fpdf2."""
     from fpdf import FPDF
+    cleaned_text = clean_text_for_pdf(text)
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=12)
-    pdf.multi_cell(0, 10, text=text)
+    pdf.multi_cell(0, 10, text=cleaned_text)
     return bytes(pdf.output())
 
 def convert_pdf_to_text(file_bytes: bytes) -> str:

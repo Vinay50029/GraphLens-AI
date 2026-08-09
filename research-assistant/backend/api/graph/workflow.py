@@ -11,7 +11,7 @@ from api.agents.file_agent import file_node
 class GraphState(TypedDict):
     messages: Annotated[list, operator.add]
     next_agent: str
-    active_document: str
+    active_documents: list[str]
     user_id: int
 
 

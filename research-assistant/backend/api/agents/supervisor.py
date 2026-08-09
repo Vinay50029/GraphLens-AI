@@ -8,7 +8,7 @@ from api.utils.llm_factory import get_llm
 
 class AgentState(TypedDict):
     messages: Annotated[list, operator.add]
-    active_document: str
+    active_documents: list[str]
     user_id: int
 
 
@@ -90,15 +90,15 @@ def supervisor_node(state: AgentState):
     messages = state["messages"]
 
     question = messages[-1].content
-    active_document = (state.get("active_document") or "").strip()
+    active_documents = state.get("active_documents") or []
 
     # If it is a file operation, always route to file_agent
     if _looks_like_file_query(question):
         return {"next_agent": "file_agent"}
 
-    # Deterministic preference: when a document is active, keep routing to document_agent
+    # Deterministic preference: when documents are active, keep routing to document_agent
     # unless the user clearly asks for web/current-events information.
-    if active_document and not _looks_like_web_query(question):
+    if active_documents and not _looks_like_web_query(question):
         return {"next_agent": "document_agent"}
 
     llm = get_llm(temperature=0.0)

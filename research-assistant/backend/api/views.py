@@ -138,12 +138,20 @@ def chat(request):
         lc_messages = deserialize_messages(raw_messages)
         workflow = get_workflow()
 
-        active_document = request.data.get("active_document")
+        # Support both active_documents (list) and fallback active_document (string)
+        active_documents = request.data.get("active_documents", [])
+        if not isinstance(active_documents, list):
+            active_documents = [active_documents] if active_documents else []
+
+        # Fallback to single active_document if present and list is empty
+        single_doc = request.data.get("active_document")
+        if not active_documents and single_doc:
+            active_documents = [single_doc]
         
         # Invoke workflow passing user_id for multi-tenancy scoping
         final_state = workflow.invoke({
             "messages": lc_messages, 
-            "active_document": active_document or "",
+            "active_documents": active_documents,
             "user_id": request.user.id
         })
         ai_response = final_state["messages"][-1]
@@ -254,7 +262,8 @@ def list_files_api(request):
             "filename": f.filename,
             "file_size": f.file_size,
             "created_at": f.created_at.isoformat(),
-            "url": get_user_file_url(request.user.id, f.filename)
+            "url": get_user_file_url(request.user.id, f.filename),
+            "created_by_agent": f.created_by_agent
         })
     return Response({"files": data})
 

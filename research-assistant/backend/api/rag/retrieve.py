@@ -30,9 +30,11 @@ def get_vectorstore():
         return None
 
 
-def get_retriever(user_id: int, file_name: Optional[str] = None):
+def get_retriever(user_id: int, file_names = None):
     """
     Initializes and returns a Pinecone retriever using Integrated Embeddings.
+    Can filter by a single file name (string or list of 1 element),
+    or a list of file names (if file_names is a list/tuple).
     """
     vectorstore = get_vectorstore()
     if not vectorstore:
@@ -43,8 +45,15 @@ def get_retriever(user_id: int, file_name: Optional[str] = None):
         
         # Enforce user separation metadata filter
         filters = {"user_id": {"$eq": user_id}}
-        if file_name:
-            filters["file_name"] = {"$eq": file_name.strip()}
+        if file_names:
+            if isinstance(file_names, str):
+                filters["file_name"] = {"$eq": file_names.strip()}
+            elif isinstance(file_names, (list, tuple)):
+                cleaned_names = [f.strip() for f in file_names if f.strip()]
+                if len(cleaned_names) == 1:
+                    filters["file_name"] = {"$eq": cleaned_names[0]}
+                elif len(cleaned_names) > 1:
+                    filters["file_name"] = {"$in": cleaned_names}
             
         search_kwargs["filter"] = filters
 

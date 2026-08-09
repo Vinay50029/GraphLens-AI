@@ -14,7 +14,7 @@ from api.rag.ingest import ingest_documents, delete_document_index
 
 class AgentState(TypedDict):
     messages: Annotated[list, operator.add]
-    active_document: str
+    active_documents: list[str]
     user_id: int
 
 # --- Pydantic Schemas for Tool Arguments ---
@@ -41,7 +41,7 @@ class ListFilesInput(BaseModel):
 def _get_user_and_filename(config: RunnableConfig, filename: str):
     """Utility to authenticate user and enforce the active document if selected in UI."""
     user_id = config.get("configurable", {}).get("user_id")
-    active_document = (config.get("configurable", {}).get("active_document") or "").strip()
+    active_documents = config.get("configurable", {}).get("active_documents") or []
     last_message = (config.get("configurable", {}).get("last_message") or "").strip()
     
     if not user_id:
@@ -52,13 +52,15 @@ def _get_user_and_filename(config: RunnableConfig, filename: str):
         raise ValueError("Authenticated user does not exist in the database.")
 
     # Enforce active document ONLY if:
-    # 1. An active document is selected in UI.
+    # 1. Exactly one active document is selected in UI.
     # 2. The user did NOT explicitly mention the target filename in their message.
-    if active_document and filename != active_document:
-        import os
-        base_name = os.path.splitext(filename)[0].lower()
-        if base_name not in last_message.lower() and filename.lower() not in last_message.lower():
-            filename = active_document
+    if len(active_documents) == 1:
+        active_doc = active_documents[0]
+        if active_doc and filename != active_doc:
+            import os
+            base_name = os.path.splitext(filename)[0].lower()
+            if base_name not in last_message.lower() and filename.lower() not in last_message.lower():
+                filename = active_doc
         
     return user, filename
 
@@ -77,6 +79,7 @@ def create_file(filename: str, content: str, config: RunnableConfig) -> str:
             return f"Error: Invalid file extension. Only PDF (.pdf) and text (.txt) files are supported in this workspace."
             
         user_file, created = UserFile.objects.get_or_create(user=user, filename=filename)
+        user_file.created_by_agent = True
         size = write_user_file(user.id, filename, content)
         user_file.file_size = size
         user_file.save()
@@ -232,7 +235,7 @@ _agent_executor = create_react_agent(
 def file_node(state: AgentState):
     """File manager agent node - invokes the file assistant executor."""
     user_id = state.get("user_id")
-    active_document = (state.get("active_document") or "").strip()
+    active_documents = state.get("active_documents") or []
     
     if not user_id:
         return {"messages": [AIMessage(content="Error: No user authenticated.")]}
@@ -243,8 +246,12 @@ def file_node(state: AgentState):
         return {"messages": [AIMessage(content="Error: Authenticated user does not exist in the database.")]}
 
     active_doc_prompt = ""
-    if active_document:
-        active_doc_prompt = f"\nIMPORTANT: The user currently has the file '{active_document}' selected in the UI. If they refer to 'this file', 'the file', or do not specify another name, target '{active_document}'. If they explicitly ask to create or manage a different file by name (e.g. 'jhon.pdf'), you must target that name instead."
+    if active_documents:
+        if len(active_documents) == 1:
+            active_doc_prompt = f"\nIMPORTANT: The user currently has the file '{active_documents[0]}' selected in the UI. If they refer to 'this file', 'the file', or do not specify another name, target '{active_documents[0]}'. If they explicitly ask to create or manage a different file by name (e.g. 'jhon.pdf'), you must target that name instead."
+        else:
+            docs_str = ", ".join(f"'{f}'" for f in active_documents)
+            active_doc_prompt = f"\nIMPORTANT: The user currently has the following files selected in the UI: {docs_str}. If they refer to 'these files' or specify one of them by name, target that. If they ask to create/manage a file by name, target that name."
 
     system_prompt = SystemMessage(content=f"""You are a helpful AI file assistant for user '{user.username}'.{active_doc_prompt}
 You have tools to create, read, update, delete, and list the user's files.
@@ -259,7 +266,7 @@ Once you obtain the result from the tool, explain it to the user and stop. Do NO
         config={
             "configurable": {
                 "user_id": user_id,
-                "active_document": active_document,
+                "active_documents": active_documents,
                 "last_message": state["messages"][-1].content
             }
         }

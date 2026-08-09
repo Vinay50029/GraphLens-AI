@@ -12,7 +12,7 @@ from api.utils.llm_factory import get_llm
 
 class AgentState(TypedDict):
     messages: Annotated[list, operator.add]
-    active_document: str
+    active_documents: list[str]
 
 
 @tool

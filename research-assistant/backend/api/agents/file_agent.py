@@ -256,6 +256,7 @@ def file_node(state: AgentState):
     system_prompt = SystemMessage(content=f"""You are a helpful AI file assistant for user '{user.username}'.{active_doc_prompt}
 You have tools to create, read, update, delete, and list the user's files.
 Only PDF (.pdf) and text (.txt) files are supported in this workspace. Word documents (.doc, .docx) and other formats are not supported.
+When calling tools to write or update file content, replace all double quotes (") with single quotes (') inside the content string to prevent JSON tool-calling serialization errors.
 Perform ONLY the specific operation requested by the user. Do not call any tools that are not directly requested.
 Once you obtain the result from the tool, explain it to the user and stop. Do NOT call any more tools.
 """)

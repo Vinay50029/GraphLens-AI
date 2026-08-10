@@ -96,11 +96,6 @@ def supervisor_node(state: AgentState):
     if _looks_like_file_query(question):
         return {"next_agent": "file_agent"}
 
-    # Deterministic preference: when documents are active, keep routing to document_agent
-    # unless the user clearly asks for web/current-events information.
-    if active_documents and not _looks_like_web_query(question):
-        return {"next_agent": "document_agent"}
-
     llm = get_llm(temperature=0.0)
     router_llm = llm.with_structured_output(RouteSchema)
 
@@ -110,11 +105,16 @@ def supervisor_node(state: AgentState):
         history_str = "\n".join([f"{msg.type}: {msg.content}" for msg in history_msgs])
         conversation_history = f"Recent Conversation:\n{history_str}\n"
 
+    active_docs_str = f"Active Documents: {', '.join(active_documents)}" if active_documents else "No active documents selected."
+
     prompt = f"""You are the supervisor of a research assistant system. Your job is to route the user's question to the correct specialist.
 
+    Current Workspace State:
+    {active_docs_str}
+
     Available specialists:
-    1. 'document_agent': Use this IF the user is asking about a specific PDF they uploaded, a document provided to you, or asking to summarize "my document", "the given context", or "the text".
-    2. 'researcher_agent': Use this IF the question requires up-to-date information, facts from the internet, current events, or general knowledge not contained in a specific local document.
+    1. 'document_agent': Use this IF the user is asking about the content of the active documents, specific PDFs they uploaded, or asking to analyze/summarize "the document", "the given context", or "the text".
+    2. 'researcher_agent': Use this IF the question requires general knowledge (e.g. word definitions, math calculations, general logic), up-to-date information, facts from the internet, or current events.
     3. 'file_agent': Use this IF the user asks to manage their files, such as creating, reading, listing, updating, editing, or deleting files. (e.g. 'list my files', 'create a file named notes.txt', 'what is in report.txt', 'delete file.txt').
 
     {conversation_history}

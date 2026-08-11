@@ -8,14 +8,14 @@ def get_llm(temperature: float = 0.0):
     """
     Returns a ChatGroq LLM instance.
     Uses GROQ_API_KEY from the .env file.
-    Model: llama3-70b-8192 (free-tier Groq model)
+    Model: llama-3.3-70b-versatile (state-of-the-art Groq model)
     """
     groq_api_key = os.environ.get("GROQ_API_KEY")
     if not groq_api_key:
         raise ValueError("GROQ_API_KEY is not set in your .env file!")
     
     return ChatGroq(
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         temperature=temperature,
         api_key=groq_api_key,
     )

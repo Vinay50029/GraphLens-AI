@@ -71,3 +71,23 @@ The File Agent manages the user's physical workspace files and directory structu
    * [delete_file](file:///Users/gattuvinaykumar/Documents/intelligent%20Research%20Assistant/research-assistant/backend/api/agents/file_agent.py#L174): Deletes the local workspace file and immediately purges all matching vector chunks from Pinecone.
    * [list_files](file:///Users/gattuvinaykumar/Documents/intelligent%20Research%20Assistant/research-assistant/backend/api/agents/file_agent.py#L197): Lists all files in the user's storage directory.
 4. **Outcome Delivery:** It completes the execution, returns a confirmation message explaining the file changes, and completes the graph run.
+
+---
+
+## 5. 📧 Email Agent (`email_node`)
+The Email Agent automatically composes and dispatches email messages with workspace file attachments (e.g. PDFs) directly from the chat interface.
+
+* **File Location:** [email_agent.py](file:///Users/gattuvinaykumar/Documents/intelligent%20Research%20Assistant/research-assistant/backend/api/agents/email_agent.py)
+* **Node Implementation:** [email_node](file:///Users/gattuvinaykumar/Documents/intelligent%20Research%20Assistant/research-assistant/backend/api/agents/email_agent.py#L123)
+
+### Flow & Logic:
+1. **ReAct Paradigm:** Runs as an autonomous agent using `create_react_agent` equipped with `send_email_with_attachment_tool`.
+2. **Comprehensive Workspace File Access:**
+   - Accesses both **User Uploaded Documents** and **Agent Generated Documents** by querying `UserFile` records and workspace storage.
+   - Utilizes `_resolve_user_file` helper for flexible, case-insensitive, and prefix/extension-agnostic file matching (e.g. matching `send the summery.pdf` -> `summery.pdf`).
+3. **Sender Identification & Central Account Relay:**
+   - Transmits emails via the central account (`intelligentresearchassistant@gmail.com`) using Django SMTP.
+   - Sets the `Reply-To` header to the user's personal email (`request.user.email`) so replies go directly to the user.
+   - Sets the email Subject and Body text to explicitly identify the sender name and email (e.g. `[GraphLens AI] Vinay (vinay@gmail.com) shared a document: report.pdf`).
+4. **Single Execution & Delivery:** Calls tool exactly once, attaches file bytes, delivers via SMTP, and returns clean response.
+

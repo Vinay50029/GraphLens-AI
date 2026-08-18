@@ -148,11 +148,13 @@ def chat(request):
         if not active_documents and single_doc:
             active_documents = [single_doc]
         
-        # Invoke workflow passing user_id for multi-tenancy scoping
+        # Invoke workflow passing user details for multi-tenancy scoping and email sender context
         final_state = workflow.invoke({
             "messages": lc_messages, 
             "active_documents": active_documents,
-            "user_id": request.user.id
+            "user_id": request.user.id,
+            "user_email": getattr(request.user, "email", None) or "user@graphlens.ai",
+            "user_name": getattr(request.user, "username", None) or "User",
         })
         ai_response = final_state["messages"][-1]
 

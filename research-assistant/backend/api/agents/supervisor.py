@@ -13,7 +13,7 @@ class AgentState(TypedDict):
 
 
 class RouteSchema(BaseModel):
-    next_node: Literal["document_agent", "researcher_agent", "file_agent"] = Field(
+    next_node: Literal["document_agent", "researcher_agent", "file_agent", "email_agent"] = Field(
         description="The next agent to route the query to."
     )
 
@@ -37,6 +37,30 @@ def _looks_like_web_query(question: str) -> bool:
         "www.",
     ]
     return any(token in q for token in web_hints)
+
+
+def _looks_like_email_query(question: str) -> bool:
+    q = question.lower()
+    email_hints = [
+        "send email",
+        "send mail",
+        "send pdf to",
+        "email this",
+        "email file",
+        "email document",
+        "email report",
+        "send to my friend",
+        "mail to",
+        "send an email",
+        "email to",
+        "forward file",
+        "mail this",
+    ]
+    if any(hint in q for hint in email_hints):
+        return True
+    if "@" in q and any(w in q for w in ["send", "email", "mail", "attach", "forward"]):
+        return True
+    return False
 
 
 def _looks_like_file_query(question: str) -> bool:
@@ -92,7 +116,10 @@ def supervisor_node(state: AgentState):
     question = messages[-1].content
     active_documents = state.get("active_documents") or []
 
-    # If it is a file operation, always route to file_agent
+    # Deterministic checks
+    if _looks_like_email_query(question):
+        return {"next_agent": "email_agent"}
+
     if _looks_like_file_query(question):
         return {"next_agent": "file_agent"}
 
@@ -116,6 +143,7 @@ def supervisor_node(state: AgentState):
     1. 'document_agent': Use this IF the user is asking about the content of the active documents, specific PDFs they uploaded, or asking to analyze/summarize "the document", "the given context", or "the text".
     2. 'researcher_agent': Use this IF the question requires general knowledge (e.g. word definitions, math calculations, general logic), up-to-date information, facts from the internet, or current events.
     3. 'file_agent': Use this IF the user asks to manage their files, such as creating, reading, listing, updating, editing, or deleting files. (e.g. 'list my files', 'create a file named notes.txt', 'what is in report.txt', 'delete file.txt').
+    4. 'email_agent': Use this IF the user asks to send an email, mail a document/file, or forward a PDF file to a recipient email address (e.g. 'send report.pdf to friend@gmail.com', 'email this document to user@example.com').
 
     {conversation_history}
     User Query: {question}
@@ -123,4 +151,5 @@ def supervisor_node(state: AgentState):
 
     decision = router_llm.invoke(prompt)
     return {"next_agent": decision.next_node}
+
 

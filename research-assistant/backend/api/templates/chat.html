@@ -74,6 +74,9 @@
             background-color: rgba(255, 255, 255, 0.03);
             border: 1px dashed rgba(255, 255, 255, 0.1);
         }
+        .suggestions-grid {
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+        }
     </style>
 </head>
 <body>
@@ -139,8 +142,10 @@
                         <p class="project-overview">
                             GraphLens AI is a secure, isolated workspace that merges 
                             <strong>Retrieval-Augmented Generation (RAG)</strong>, 
-                            an <strong>Autonomous File Agent</strong>, and <strong>Real-time Web Search</strong>. 
-                            Upload files, write summaries, and let the AI coordinate your tasks.
+                            an <strong>Autonomous File Agent</strong>, 
+                            <strong>Real-time Web Search</strong>, and an 
+                            <strong>Autonomous Email Agent</strong>. 
+                            Upload files, write summaries, dispatch document emails, and let the AI coordinate your tasks.
                         </p>
                     </div>
                     
@@ -150,7 +155,7 @@
                                 <span class="feature-icon">📂</span>
                                 <h4>Isolated Document RAG</h4>
                             </div>
-                            <p>Upload PDFs, Word docs, or Text files. They are indexed in Pinecone and queried only by you in absolute privacy.</p>
+                            <p>Upload PDFs or Text files. They are indexed in Pinecone and queried only by you in absolute privacy.</p>
                         </div>
                         <div class="feature-item">
                             <div class="feature-title-row">
@@ -159,7 +164,14 @@
                             </div>
                             <p>Ask the assistant to create, edit, or list files in your folder. The AI writes code updates directly into your files.</p>
                         </div>
-                        <div class="feature-item full-width">
+                        <div class="feature-item">
+                            <div class="feature-title-row">
+                                <span class="feature-icon">📧</span>
+                                <h4>Autonomous Email Agent</h4>
+                            </div>
+                            <p>Automatically compose and dispatch emails with workspace file attachments (e.g. PDFs or summaries) directly from the chat.</p>
+                        </div>
+                        <div class="feature-item">
                             <div class="feature-title-row">
                                 <span class="feature-icon">🔒</span>
                                 <h4>Multi-Tenant Security Scoping</h4>
@@ -182,6 +194,10 @@
                             <div class="suggestion-action-card" onclick="applySuggestion('Search the web for the latest advancements in AI agent platforms')">
                                 <div class="suggestion-action-title">🌐 Fetch Web Information</div>
                                 <div class="suggestion-action-desc">Retrieve real-time facts using web search.</div>
+                            </div>
+                            <div class="suggestion-action-card" onclick="applySuggestion('Send an email to colleague@example.com attaching the research summary')">
+                                <div class="suggestion-action-title">📧 Send Document Email</div>
+                                <div class="suggestion-action-desc">Email research papers or summaries to collaborators.</div>
                             </div>
                         </div>
                     </div>

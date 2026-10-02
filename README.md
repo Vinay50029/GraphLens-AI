@@ -15,7 +15,9 @@
 > 🚀 **[Click here to open the Live Interactive Architecture Diagram](https://vinay50029.github.io/GraphLens-AI/architecture.html)**  
 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/8c01d501-d596-4c80-b0d0-83b28fccf63c" autoplay="autoplay" loop="loop" muted="muted" playsinline="playsinline" controls="controls" width="100%"></video>
+  <a href="https://vinay50029.github.io/GraphLens-AI/architecture.html">
+    <img width="1360" height="694" alt="Architecture_Preview_flow" src="https://github.com/user-attachments/assets/dc8a684c-28c9-4ce5-b9b6-5e66b0ecd6f1" />
+  </a>
 </p>
 
 ---

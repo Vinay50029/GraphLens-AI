@@ -24,53 +24,63 @@
 
 ## 🔄 System Flow
 
-1. **Ingestion**: The user uploads a PDF, Word, or Text document. The Django backend parses and extracts text using PyMuPDF or python-docx.
-2. **Indexing**: Extracted content is chunked, embedded, and indexed into **Pinecone Serverless**, tagged with the user's specific ID to ensure multi-tenant isolation.
-3. **User Query**: The user sends a prompt through the chat interface.
-4. **Supervisory Routing**: The **LangGraph Supervisor** inspects the query to check if it's a file operation (e.g. creating/reading files), or dynamically routes it to the correct worker agent.
+1. **Ingestion & Storage**: The user uploads a PDF or text document. The Django backend parses text using PyMuPDF, persists the file to **AWS S3** or local storage, and logs the metadata in the relational database (`UserFile`).
+2. **Vector Indexing**: Extracted content is chunked and embedded using **all-MiniLM-L6-v2** or **llama-text-embed-v2**, then indexed into **Pinecone Serverless** or local **ChromaDB**, tagged with the user's `user_id` for multi-tenant isolation.
+3. **User Query**: The user sends a prompt through the chat interface, optionally targeting active documents.
+4. **Supervisory Routing**: The **LangGraph Supervisor** inspects the query using fast deterministic checks and structured LLM routing to delegate tasks across 4 specialized worker agents.
 5. **Agent Execution**:
-   * *Document Agent*: Performs a similarity search in Pinecone scoped to the user's active document.
-   * *Research Agent*: Conducts a live internet search on DuckDuckGo and deep-scrapes URLs using Jina Reader.
-   * *Workspace File Agent*: Creates, reads, updates, or deletes files directly inside the user's directory on the server.
-6. **Synthesis & Sync**: The consolidated context is passed to the Groq LLM to generate a grounded response. Any files created or modified by the File Agent are automatically re-indexed back into Pinecone.
+   * 📄 **Document RAG Agent**: Performs similarity searches across the vector database (Pinecone/ChromaDB) scoped to the user's active document and retrieves top context chunks.
+   * 🔍 **Web Researcher Agent**: Conducts live internet searches on DuckDuckGo and deep-scrapes markdown text using Jina Reader (`r.jina.ai`) in an autonomous ReAct loop.
+   * 📁 **Workspace File Agent**: Creates, reads, updates, or deletes files directly inside the user's workspace on disk/S3, automatically triggering vector store re-indexing.
+   * 📧 **Email Agent**: Extracts recipient and document parameters, resolves attachments from storage/UserFile database, and dispatches emails via SMTP relay with custom `Reply-To` headers.
+6. **Synthesis & Response**: Context is synthesized by the LLM (**Groq Cloud Llama-3.3-70B** or **Local Ollama Llama-3.1**) into a grounded answer, returned via Django REST Framework, and rendered live in the chat dashboard.
 
 ---
 
 ## 🚀 Key Features
 
-### 🧠 Intelligent Agent Routing (LangGraph)
+## 🧠 Intelligent Agent Routing (LangGraph)
 * **Built using LangGraph Supervisor Architecture**.
-* **Intent-Based Logic**: Decides whether a query requires document Q&A, a live web search, or workspace file operations.
-
-### 🔍 Isolated Document RAG
-* **Multi-Tenant Privacy**: Scopes document ingestion and vector database retrieval by user session to keep files completely private.
-* **Semantic Vector Search**: Powered by Pinecone to query text chunks using cosine similarity.
-
+* **Intent-Based Dynamic Routing**: Automatically delegates queries between document RAG, web search, file management, and email dispatch.
+### 🔍 Isolated Document RAG (Dual Vector Store)
+* **Multi-Tenant Privacy**: Scopes document ingestion and vector retrieval by user session to ensure complete data isolation.
+* **Flexible Vector Backend**: Seamlessly toggle between **Pinecone Serverless** (cloud) and **ChromaDB** (local disk).
+* **Semantic Embeddings**: Powered by HuggingFace `all-MiniLM-L6-v2` or Pinecone `llama-text-embed-v2`.
 ### 🌐 Real-Time Web Research
-* **Live Search**: Fetches real-time internet facts using the DuckDuckGo Search API.
-* **URL Deep-Scraping**: Converts links into clean markdown content via the Jina Reader API for the LLM to analyze.
-
-### 📂 Chat-Based File Manager
-* **Workspace CRUD**: Allows users to manage server files (create, read, append, overwrite, delete) directly through chat instructions.
-* **Auto-Sync Indexing**: Automatically indexes file edits and creations in the background database.
+* **Live Search**: Fetches real-time internet facts using DuckDuckGo.
+* **URL Deep-Scraping**: Converts web pages into clean markdown via the Jina Reader API for the LLM to inspect.
+### 📁 Chat-Based File Manager & Auto-Sync
+* **Workspace CRUD**: Manage server and cloud files (create, read, append, overwrite, delete) directly through chat instructions.
+* **Auto-Sync Indexing**: Background workers automatically re-embed and index modified files so vector search stays current.
+### 📧 Automated Email Dispatch Agent
+* **Attachment Delivery**: Sends workspace documents, PDFs, and generated reports directly to any recipient email.
+* **Sender Identity**: Dispatches via central SMTP relay while attaching user identification and setting `Reply-To` headers.
+### 💻 Hybrid AI Engine (Cloud + Local Offline)
+* **Groq Cloud Engine**: High-speed inference using `llama-3.3-70b-versatile`.
+* **Local Offline Engine**: 100% private, local inference using **Ollama** (`llama3.1`).
 
 ---
 
 ## 🎯 Use Cases
-* **📚 Academic Research**: Ask questions about reference PDFs and instantly verify claims on the live web.
-* **📄 Workspace Note-Taking**: Summarize documents or web research and save the results as new files in your workspace.
-* **🔒 Isolated Data Auditing**: Securely compare local records against current web search results.
+* **📚 Academic & Enterprise Research**: Ask questions about reference PDFs and verify claims with live web searches.
+* **📄 Workspace Note-Taking & Drafting**: Summarize documents, draft reports, and save them directly as workspace files.
+* **✉️ Direct Document Sharing**: Tell the agent to "send the summary report to colleague@example.com" and have it dispatched with attachment.
+* **🔒 Privacy-First Offline Analysis**: Switch to Ollama + ChromaDB to run the entire RAG pipeline completely offline.
 
 ---
 
 ## 🛠️ Tech Stack
-* **Frontend**: Vanilla HTML5, CSS3, and JavaScript (served directly via Django templates).
+* **Frontend**: Vanilla HTML5, CSS3 (Glassmorphism theme), and JavaScript.
 * **Backend**: Django & Django REST Framework (DRF).
-* **AI Orchestration**: LangChain & LangGraph.
-* **AI Engine**: Groq Cloud API (`llama-3.1-8b-instant`).
-* **Vector Database**: Pinecone Serverless (with `llama-text-embed-v2` embeddings).
-* **Relational Database**: Neon PostgreSQL (production) or SQLite (local development).
-* **Cloud Storage**: AWS S3 (integrated via `boto3` using presigned URLs).
+* **AI Orchestration**: LangChain & LangGraph (Supervisor multi-agent state graph).
+* **AI Inference (Hybrid)**:
+  * **Cloud**: Groq Cloud API (`llama-3.3-70b-versatile`).
+  * **Local / Offline**: Ollama (`llama3.1`).
+* **Embeddings**: HuggingFace (`all-MiniLM-L6-v2`) & Pinecone Embeddings (`llama-text-embed-v2`).
+* **Vector Databases**: Pinecone Serverless (cloud) & ChromaDB (local persistent).
+* **Relational Database**: PostgreSQL / SQLite (Django ORM with `UserFile` & auth models).
+* **Storage Vault**: AWS S3 (via `boto3` presigned URLs) & local user media cache.
+* **Email & External APIs**: SMTP Mail Relay, DuckDuckGo Search, and Jina Reader API.
 
 ---
 

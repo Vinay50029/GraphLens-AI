@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://vinay50029.github.io/GraphLens-AI/architecture.html">
-    <img width="100%" alt="Architecture Interactive Flow Preview" src="docs/Architecture_Preview_flow.gif" />
+    <img width="1620" height="799" alt="Architecture_Preview_flow" src="https://github.com/user-attachments/assets/9dad6ab9-d435-453c-9f5f-74252e5725f0" />
   </a>
 </p>
 

@@ -2,48 +2,62 @@
 
 This document details the multi-agent orchestration, key components, libraries, and system flow design of the **GraphLens AI** workspace.
 
+> 🌐 **Live Interactive Architecture Explorer**:  
+> 👉 **[Launch Interactive Diagram (Full Screen)](https://vinay50029.github.io/GraphLens-AI/architecture.html)**  
+> *(Interactive node focus, direct code source links, data flow routes, and dark/light modes)*
+
 ---
 
 ## 🔄 System Flow Chart
 
 ```mermaid
 graph TD
-    User([User]) -->|1. Upload Doc / Ask Question| DRF[Django REST API /api/chat & /api/ingest]
+    User([User]) -->|1. Upload Doc / Ask Question| DRF[Django REST API /api/chat, /api/ingest & /api/files]
     
-    %% Ingestion Flow
-    DRF -->|Ingest PDF/Docx/Txt| Ingest[Ingestion Pipeline]
-    Ingest -->|Parse Text & PyMuPDF| Chunk[Recursive Text Chunking]
-    Chunk -->|Embed: llama-text-embed-v2| Pinecone[(Pinecone Vector DB)]
+    %% Ingestion & Persistence Flow
+    DRF -->|Ingest PDF/Txt| Ingest[Ingestion Pipeline - PyMuPDF]
+    DRF -->|Store Document| Vault[(AWS S3 Vault / Local Storage)]
+    DRF -->|Record Metadata| DB[(PostgreSQL / SQLite - UserFile DB)]
+    Ingest -->|Recursive Text Chunking| Chunk[Text Splitter]
+    Chunk -->|Embed: all-MiniLM-L6-v2 / Pinecone| VectorDB[(Vector DB: Pinecone / ChromaDB)]
     
     %% Orchestration Flow
-    DRF -->|Trigger Chat| Graph[LangGraph Orchestration]
+    DRF -->|Trigger Chat State| Graph[LangGraph Orchestration]
     Graph -->|Initialize GraphState| Supervisor{Supervisor Node}
     
     %% Routing Logic
-    Supervisor -->|Check 1: Workspace/File Keywords?| FileAgent[Workspace File Agent]
-    Supervisor -->|Check 2: Active Doc & No Web Keywords?| DocAgent[Document Agent]
-    Supervisor -->|Check 3: Structured LLM Classification| RouterLLM[Router LLM Decision]
+    Supervisor -->|Check 1: File/Workspace Keywords| FileAgent[Workspace File Agent]
+    Supervisor -->|Check 2: Email Dispatch Keywords| EmailAgent[Email Dispatch Agent]
+    Supervisor -->|Check 3: Active Document Context| DocAgent[Document RAG Agent]
+    Supervisor -->|Check 4: Structured LLM Classification| RouterLLM[Router LLM Decision]
     
     RouterLLM -->|Route to Document| DocAgent
     RouterLLM -->|Route to Researcher| ResearcherAgent[Web Researcher Agent]
     RouterLLM -->|Route to File| FileAgent
+    RouterLLM -->|Route to Email| EmailAgent
     
     %% Agent Execution Details
-    DocAgent -->|Query Vectorstore by User Scope| Pinecone
-    DocAgent -->|Context + Prompt| LLM_Doc[Groq Llama-3.1-8b-instant]
+    DocAgent -->|Query Vectorstore by User & Doc Scope| VectorDB
+    DocAgent -->|Context Chunks + Prompt| LLM_Engine[LLM: Groq Llama-3.3 / Local Ollama]
     
-    ResearcherAgent -->|Search Query| DDG[DuckDuckGo Search Tool]
-    ResearcherAgent -->|Link URL| Scrape[Jina Reader Scrape Tool]
+    ResearcherAgent -->|Search Queries| DDG[DuckDuckGo Search Tool]
+    ResearcherAgent -->|Scrape Web URLs| Scrape[Jina Reader Scrape Tool]
+    DDG & Scrape -->|Live Web Context| LLM_Engine
     
-    FileAgent -->|File Operations| OS[Local User Workspace]
-    FileAgent -->|Auto-sync updates| Pinecone
+    FileAgent -->|File CRUD Operations| Vault
+    FileAgent -->|Auto-sync updates| VectorDB
+    FileAgent -->|Sync File Record| DB
+    
+    EmailAgent -->|Fetch Attachment| Vault
+    EmailAgent -->|Verify File Metadata| DB
+    EmailAgent -->|Dispatch Mail with Attachment| SMTP[SMTP Mail Relay Server]
     
     %% Synthesis & Response
-    LLM_Doc -->|Synthesized Answer| Response[Final AI Answer]
-    DDG & Scrape -->|Live Web Context| LLM_Web[Groq LLM] -->|Synthesized Answer| Response
-    OS -->|File Action Feedback| Response
+    LLM_Engine -->|Synthesized Grounded Answer| Response[Final Response to Client]
+    OS_Feedback[File Action Status / Confirmation] --> Response
+    SMTP -->|Delivery Status| Response
     
-    Response -->|Return Response| DRF
+    Response -->|Return JSON Response| DRF
     DRF -->|Render in Chat UI| User
 
     classDef main fill:#5271FF,stroke:#fff,stroke-width:2px,color:#fff;
@@ -52,30 +66,37 @@ graph TD
     classDef tool fill:#845EC2,stroke:#fff,stroke-width:2px,color:#fff;
     
     class User,DRF,Response main;
-    class Supervisor,FileAgent,DocAgent,ResearcherAgent agent;
-    class Pinecone database;
-    class Ingest,DDG,Scrape,OS tool;
+    class Supervisor,FileAgent,DocAgent,ResearcherAgent,EmailAgent agent;
+    class VectorDB,Vault,DB database;
+    class Ingest,DDG,Scrape,SMTP,LLM_Engine tool;
 ```
 
 ---
 
 ## 🧠 Multi-Agent Orchestration
 
-The backend uses **LangGraph** to build a state machine containing a team of specialized agents:
+The backend uses **LangGraph** to build an autonomous multi-agent state graph:
 
-1. **LangGraph Supervisor**: Inspects incoming queries. If the query asks for workspace file operations (e.g. creating/reading files), it routes to the **File Agent**. If the user is viewing a document, it defaults to the **Document Agent**. Otherwise, an LLM classifier selects the best worker.
-2. **Document Agent**: Similarity-searches the vectorstore for user-scoped content and constructs grounded answers.
-3. **Web Researcher Agent**: Performs DuckDuckGo searches and deep-scrapes specific links via Jina Reader (`https://r.jina.ai/`).
-4. **Workspace File Agent**: Creates, reads, appends to, or deletes files in the user directory, automatically syncing edits back into Pinecone database chunks.
+1. **LangGraph Supervisor (`supervisor_node`)**: Evaluates incoming queries using deterministic checks (file operations, email intents, active documents) followed by structured LLM classification to route the prompt to the right worker agent.
+2. **Document RAG Agent (`document_node`)**: Queries the vectorstore (Pinecone or ChromaDB) filtered strictly by the user's `user_id` and active document names, retrieving relevant chunks for grounded LLM synthesis.
+3. **Web Researcher Agent (`researcher_node`)**: Runs a ReAct loop with DuckDuckGo Search and Jina Reader (`r.jina.ai`) to gather live internet facts and clean markdown summaries.
+4. **Workspace File Agent (`file_node`)**: Executes file operations (create, read, update, delete, list) on disk and AWS S3, triggering automatic vector re-indexing for edited documents.
+5. **Email Dispatch Agent (`email_node`)**: Extracts recipient email and target filename, resolves attachments from storage/database, and transmits emails via central SMTP relay with custom `Reply-To` headers.
 
 ---
 
 ## 🛠️ Technology Stack & Dependencies
 
-* **Frontend**: HTML5, Vanilla JS & CSS (Custom dark theme with glassmorphism).
+* **Frontend**: HTML5, Vanilla JS & CSS (Glassmorphism dark theme).
 * **Backend**: Django & Django REST Framework (DRF).
-* **AI Orchestration**: LangChain & LangGraph (agent flow state machine).
-* **LLMs**: Groq Chat Engine (`llama-3.1-8b-instant` for reasoning and routing).
-* **Vector Database**: Pinecone Serverless (utilizes `llama-text-embed-v2` embeddings for chunk-level semantic searches).
-* **Relational Database**: Neon PostgreSQL (connected via `dj-database-url` and `psycopg2-binary` to store user registration, login credentials, and file metadata).
-* **Cloud Storage**: AWS S3 (integrated via `boto3` to store, download, and serve original uploaded files using secure 1-hour presigned URLs).
+* **AI Orchestration**: LangChain & LangGraph (StateGraph multi-agent flow).
+* **LLM Engine (Hybrid)**:
+  * **Cloud**: Groq API (`llama-3.3-70b-versatile`).
+  * **Local / Offline**: Ollama (`llama3.1`).
+* **Embeddings**: HuggingFace (`all-MiniLM-L6-v2`) & Pinecone Embeddings (`llama-text-embed-v2`).
+* **Vector Databases**:
+  * **Cloud**: Pinecone Serverless (cosine similarity, 1024-dim).
+  * **Local**: ChromaDB (`db/chroma_db`).
+* **Relational Database**: PostgreSQL / SQLite with Django ORM `UserFile` model for tenant file tracking.
+* **Storage Vault**: AWS S3 Bucket (via `boto3` presigned URLs) + Local filesystem cache (`users/{user_id}/`).
+* **Email & External APIs**: SMTP Gateway, DuckDuckGo Search, and Jina Reader API.

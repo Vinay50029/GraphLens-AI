@@ -7,6 +7,17 @@
 ## 📸 Demo / Preview
 
 <img width="1491" height="920" alt="image" src="https://github.com/user-attachments/assets/14604513-7de6-43f7-a23f-069fcbdfd695" />
+
+---
+
+## 🏗️ Interactive System Architecture
+
+> 🚀 **[Click here to open the Live Interactive Architecture Diagram](https://vinay50029.github.io/GraphLens-AI/architecture.html)**  
+
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/8c01d501-d596-4c80-b0d0-83b28fccf63c" autoplay="autoplay" loop="loop" muted="muted" playsinline="playsinline" controls="controls" width="100%"></video>
+</p>
+
 ---
 
 ## 🔄 System Flow

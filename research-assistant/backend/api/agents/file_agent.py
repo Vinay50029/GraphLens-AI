@@ -258,7 +258,7 @@ You have tools to create, read, update, delete, and list the user's files.
 Only PDF (.pdf) and text (.txt) files are supported in this workspace. Word documents (.doc, .docx) and other formats are not supported.
 When calling tools to write or update file content, replace all double quotes (") with single quotes (') inside the content string to prevent JSON tool-calling serialization errors.
 Perform ONLY the specific operation requested by the user. Do not call any tools that are not directly requested.
-Once you obtain the result from the tool, explain it to the user and stop. Do NOT call any more tools.
+Once you obtain the result from the tool, write the final response to the user. IMPORTANT: The user CANNOT see the tool outputs directly. Therefore, if you read/view a file, you MUST print the file's contents directly inside your final message to the user so they can see it. Do NOT say 'the content has been displayed' without copying the text. Do NOT call any more tools.
 """)
 
     inputs = {"messages": [system_prompt] + state["messages"]}

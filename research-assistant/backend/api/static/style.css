@@ -1,25 +1,208 @@
 /* ==========================================================================
    Intelligent Research Assistant - Core CSS Styling
-   Aesthetics: Rich dark mode, HSL tailored gradients, and Glassmorphism
+   Aesthetics: Adaptive Light & Dark Mode, HSL tailored gradients, Glassmorphism
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg-dark: #070913;
-    --bg-panel: rgba(13, 17, 34, 0.55);
-    --bg-sidebar: rgba(10, 12, 26, 0.7);
-    --border-color: rgba(255, 255, 255, 0.06);
-    --border-active: rgba(99, 102, 241, 0.4);
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --accent-primary: #6366f1; /* Indigo */
-    --accent-hover: #4f46e5;
+    /* Raw Light & Dark Palette Tokens */
+    --bg-canvas-light: #f8fafc;
+    --bg-canvas-dark: #070913;
+
+    --bg-panel-light: rgba(255, 255, 255, 0.85);
+    --bg-panel-dark: rgba(13, 17, 34, 0.55);
+
+    --bg-sidebar-light: rgba(255, 255, 255, 0.9);
+    --bg-sidebar-dark: rgba(10, 12, 26, 0.7);
+
+    --bg-surface-subtle-light: rgba(15, 23, 42, 0.03);
+    --bg-surface-subtle-dark: rgba(255, 255, 255, 0.03);
+
+    --bg-surface-hover-light: rgba(15, 23, 42, 0.06);
+    --bg-surface-hover-dark: rgba(255, 255, 255, 0.06);
+
+    --bg-recessed-light: rgba(241, 245, 249, 0.85);
+    --bg-recessed-dark: rgba(7, 9, 19, 0.5);
+
+    --bg-recessed-hover-light: rgba(226, 232, 240, 0.75);
+    --bg-recessed-hover-dark: rgba(7, 9, 19, 0.7);
+
+    --border-color-light: rgba(15, 23, 42, 0.1);
+    --border-color-dark: rgba(255, 255, 255, 0.06);
+
+    --border-subtle-light: rgba(15, 23, 42, 0.08);
+    --border-subtle-dark: rgba(255, 255, 255, 0.08);
+
+    --border-hover-light: rgba(15, 23, 42, 0.2);
+    --border-hover-dark: rgba(255, 255, 255, 0.15);
+
+    --text-primary-light: #0f172a;
+    --text-primary-dark: #f3f4f6;
+
+    --text-secondary-light: #64748b;
+    --text-secondary-dark: #9ca3af;
+
+    --text-overview-light: #334155;
+    --text-overview-dark: #d1d5db;
+
+    --accent-primary-light: #4f46e5;
+    --accent-primary-dark: #6366f1;
+
+    --accent-hover-light: #4338ca;
+    --accent-hover-dark: #4f46e5;
+
+    --accent-highlight-light: #4338ca;
+    --accent-highlight-dark: #c7d2fe;
+
+    --scrollbar-thumb-light: rgba(15, 23, 42, 0.18);
+    --scrollbar-thumb-dark: rgba(255, 255, 255, 0.12);
+    --scrollbar-track-light: transparent;
+    --scrollbar-track-dark: transparent;
+
+    /* Default (Light) Assignments + Fallbacks */
+    --bg-dark: var(--bg-canvas-light);
+    --bg-panel: var(--bg-panel-light);
+    --bg-sidebar: var(--bg-sidebar-light);
+    --bg-surface-subtle: var(--bg-surface-subtle-light);
+    --bg-surface-hover: var(--bg-surface-hover-light);
+    --bg-recessed: var(--bg-recessed-light);
+    --bg-recessed-hover: var(--bg-recessed-hover-light);
+    --border-color: var(--border-color-light);
+    --border-subtle: var(--border-subtle-light);
+    --border-hover: var(--border-hover-light);
+    --border-active: rgba(79, 70, 229, 0.4);
+    --text-primary: var(--text-primary-light);
+    --text-secondary: var(--text-secondary-light);
+    --text-overview: var(--text-overview-light);
+    --accent-primary: var(--accent-primary-light);
+    --accent-hover: var(--accent-hover-light);
+    --accent-highlight: var(--accent-highlight-light);
     --accent-success: #10b981;
     --accent-error: #ef4444;
+    --scrollbar-thumb: var(--scrollbar-thumb-light);
+    --scrollbar-track: var(--scrollbar-track-light);
+
+    --heading-gradient: linear-gradient(135deg, #0f172a 30%, #4f46e5 100%);
+    --welcome-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%);
+    --welcome-border: rgba(15, 23, 42, 0.1);
+    --welcome-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), 0 20px 50px rgba(15, 23, 42, 0.05), 0 0 40px rgba(79, 70, 229, 0.04);
+    --card-shadow: 0 10px 35px 0 rgba(15, 23, 42, 0.08);
+    --input-shadow: 0 8px 25px rgba(15, 23, 42, 0.08), 0 0 15px rgba(79, 70, 229, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    --input-focus-bg: rgba(255, 255, 255, 0.98);
+    --input-focus-shadow: 0 12px 32px rgba(15, 23, 42, 0.12), 0 0 20px rgba(79, 70, 229, 0.18), 0 0 0 1px rgba(79, 70, 229, 0.35);
+    --modal-overlay-bg: rgba(15, 23, 42, 0.45);
+    --code-block-bg: rgba(15, 23, 42, 0.06);
+    --inline-code-bg: rgba(15, 23, 42, 0.07);
+
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --card-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
     --glass-blur: blur(18px);
+
+    /* MANDATORY: Automatically adapt native UI to user system preferences */
+    color-scheme: light dark;
+    accent-color: var(--accent-primary);
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* MANDATORY: Fallback for browsers without light-dark() support */
+@media (prefers-color-scheme: dark) {
+    :root:not(.theme-light) {
+        --bg-dark: var(--bg-canvas-dark);
+        --bg-panel: var(--bg-panel-dark);
+        --bg-sidebar: var(--bg-sidebar-dark);
+        --bg-surface-subtle: var(--bg-surface-subtle-dark);
+        --bg-surface-hover: var(--bg-surface-hover-dark);
+        --bg-recessed: var(--bg-recessed-dark);
+        --bg-recessed-hover: var(--bg-recessed-hover-dark);
+        --border-color: var(--border-color-dark);
+        --border-subtle: var(--border-subtle-dark);
+        --border-hover: var(--border-hover-dark);
+        --border-active: rgba(99, 102, 241, 0.4);
+        --text-primary: var(--text-primary-dark);
+        --text-secondary: var(--text-secondary-dark);
+        --text-overview: var(--text-overview-dark);
+        --accent-primary: var(--accent-primary-dark);
+        --accent-hover: var(--accent-hover-dark);
+        --accent-highlight: var(--accent-highlight-dark);
+        --scrollbar-thumb: var(--scrollbar-thumb-dark);
+        --scrollbar-track: var(--scrollbar-track-dark);
+
+        --heading-gradient: linear-gradient(135deg, #ffffff 35%, #a5b4fc 100%);
+        --welcome-bg: linear-gradient(145deg, rgba(17, 21, 40, 0.96) 0%, rgba(10, 12, 26, 0.96) 100%);
+        --welcome-border: rgba(255, 255, 255, 0.12);
+        --welcome-shadow: var(--card-shadow), 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 40px rgba(99, 102, 241, 0.04);
+        --card-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+        --input-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06);
+        --input-focus-bg: rgba(16, 20, 38, 0.7);
+        --input-focus-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.3), 0 0 0 1px rgba(99, 102, 241, 0.4);
+        --modal-overlay-bg: rgba(4, 5, 11, 0.7);
+        --code-block-bg: rgba(0, 0, 0, 0.3);
+        --inline-code-bg: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* Explicit User Theme Overrides */
+:root.theme-light {
+    color-scheme: light;
+}
+
+:root.theme-dark {
+    color-scheme: dark;
+    --bg-dark: var(--bg-canvas-dark);
+    --bg-panel: var(--bg-panel-dark);
+    --bg-sidebar: var(--bg-sidebar-dark);
+    --bg-surface-subtle: var(--bg-surface-subtle-dark);
+    --bg-surface-hover: var(--bg-surface-hover-dark);
+    --bg-recessed: var(--bg-recessed-dark);
+    --bg-recessed-hover: var(--bg-recessed-hover-dark);
+    --border-color: var(--border-color-dark);
+    --border-subtle: var(--border-subtle-dark);
+    --border-hover: var(--border-hover-dark);
+    --border-active: rgba(99, 102, 241, 0.4);
+    --text-primary: var(--text-primary-dark);
+    --text-secondary: var(--text-secondary-dark);
+    --text-overview: var(--text-overview-dark);
+    --accent-primary: var(--accent-primary-dark);
+    --accent-hover: var(--accent-hover-dark);
+    --accent-highlight: var(--accent-highlight-dark);
+    --scrollbar-thumb: var(--scrollbar-thumb-dark);
+    --scrollbar-track: var(--scrollbar-track-dark);
+
+    --heading-gradient: linear-gradient(135deg, #ffffff 35%, #a5b4fc 100%);
+    --welcome-bg: linear-gradient(145deg, rgba(17, 21, 40, 0.96) 0%, rgba(10, 12, 26, 0.96) 100%);
+    --welcome-border: rgba(255, 255, 255, 0.12);
+    --welcome-shadow: var(--card-shadow), 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 40px rgba(99, 102, 241, 0.04);
+    --card-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+    --input-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --input-focus-bg: rgba(16, 20, 38, 0.7);
+    --input-focus-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.3), 0 0 0 1px rgba(99, 102, 241, 0.4);
+    --modal-overlay-bg: rgba(4, 5, 11, 0.7);
+    --code-block-bg: rgba(0, 0, 0, 0.3);
+    --inline-code-bg: rgba(255, 255, 255, 0.08);
+}
+
+/* Modern light-dark() support for automatic color-scheme adaptation */
+@supports (color: light-dark(white, black)) {
+    :root {
+        --bg-dark: light-dark(var(--bg-canvas-light), var(--bg-canvas-dark));
+        --bg-panel: light-dark(var(--bg-panel-light), var(--bg-panel-dark));
+        --bg-sidebar: light-dark(var(--bg-sidebar-light), var(--bg-sidebar-dark));
+        --bg-surface-subtle: light-dark(var(--bg-surface-subtle-light), var(--bg-surface-subtle-dark));
+        --bg-surface-hover: light-dark(var(--bg-surface-hover-light), var(--bg-surface-hover-dark));
+        --bg-recessed: light-dark(var(--bg-recessed-light), var(--bg-recessed-dark));
+        --bg-recessed-hover: light-dark(var(--bg-recessed-hover-light), var(--bg-recessed-hover-dark));
+        --border-color: light-dark(var(--border-color-light), var(--border-color-dark));
+        --border-subtle: light-dark(var(--border-subtle-light), var(--border-subtle-dark));
+        --border-hover: light-dark(var(--border-hover-light), var(--border-hover-dark));
+        --text-primary: light-dark(var(--text-primary-light), var(--text-primary-dark));
+        --text-secondary: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+        --text-overview: light-dark(var(--text-overview-light), var(--text-overview-dark));
+        --accent-primary: light-dark(var(--accent-primary-light), var(--accent-primary-dark));
+        --accent-hover: light-dark(var(--accent-hover-light), var(--accent-hover-dark));
+        --accent-highlight: light-dark(var(--accent-highlight-light), var(--accent-highlight-dark));
+        --scrollbar-thumb: light-dark(var(--scrollbar-thumb-light), var(--scrollbar-thumb-dark));
+        --scrollbar-track: light-dark(var(--scrollbar-track-light), var(--scrollbar-track-dark));
+    }
 }
 
 * {
@@ -40,6 +223,53 @@ body {
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================
+   Theme Toggle Button (Light / Dark Mode)
+   ========================================== */
+
+.theme-toggle-btn {
+    background: var(--bg-surface-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 0.4rem 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--bg-surface-hover);
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+}
+
+.theme-toggle-btn svg {
+    width: 15px;
+    height: 15px;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+}
+
+.auth-theme-toggle {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.75rem;
+    z-index: 10;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 /* ==========================================
@@ -77,7 +307,7 @@ body {
     font-size: 1.85rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+    background: var(--heading-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -101,7 +331,7 @@ body {
 
 .form-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-surface-subtle);
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 0.75rem 1rem;
@@ -114,7 +344,7 @@ body {
 .form-input:focus {
     outline: none;
     border-color: var(--accent-primary);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-surface-hover);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
@@ -157,15 +387,15 @@ body {
 }
 
 .auth-link:hover {
-    color: #a5b4fc;
+    color: var(--accent-highlight);
 }
 
 .alert {
     background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.25);
     border-radius: 8px;
     padding: 0.75rem 1rem;
-    color: #f87171;
+    color: var(--accent-error);
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
     text-align: center;
@@ -202,7 +432,7 @@ body {
 .logo-section h2 {
     font-size: 1.45rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #ffffff 40%, var(--accent-primary) 100%);
+    background: var(--heading-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -218,7 +448,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-surface-subtle);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 0.75rem 1rem;
@@ -259,7 +489,7 @@ body {
 }
 
 .upload-box {
-    background: rgba(99, 102, 241, 0.02);
+    background: rgba(99, 102, 241, 0.03);
     border: 1.5px dashed var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
@@ -270,7 +500,7 @@ body {
 }
 
 .upload-box:hover {
-    background: rgba(99, 102, 241, 0.04);
+    background: rgba(99, 102, 241, 0.06);
     border-color: var(--accent-primary);
 }
 
@@ -312,7 +542,7 @@ body {
 }
 
 .file-item {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-surface-subtle);
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 0.75rem;
@@ -324,12 +554,12 @@ body {
 }
 
 .file-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--bg-surface-hover);
+    border-color: var(--border-hover);
 }
 
 .file-item.active {
-    background: rgba(99, 102, 241, 0.07);
+    background: rgba(99, 102, 241, 0.09);
     border-color: var(--border-active);
     box-shadow: 0 0 12px rgba(99, 102, 241, 0.1);
 }
@@ -352,7 +582,7 @@ body {
 }
 
 .file-item.active .file-name {
-    color: #c7d2fe;
+    color: var(--accent-highlight);
 }
 
 .file-size {
@@ -381,12 +611,12 @@ body {
 
 .action-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-surface-hover);
 }
 
 .delete-btn:hover {
     color: var(--accent-error);
-    background: rgba(239, 68, 68, 0.08);
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .empty-files {
@@ -435,7 +665,7 @@ body {
 }
 
 .system-badge {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-surface-subtle);
     border: 1px solid var(--border-color);
     border-radius: 30px;
     padding: 0.4rem 0.85rem;
@@ -467,16 +697,16 @@ body {
 }
 
 .welcome-card {
-    background: linear-gradient(145deg, rgba(17, 21, 40, 0.96) 0%, rgba(10, 12, 26, 0.96) 100%);
+    background: var(--welcome-bg);
     backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, 0.12); /* Brighter border to outline card */
-    border-top: 1px solid rgba(99, 102, 241, 0.5); /* Stronger top glow */
+    border: 1px solid var(--welcome-border);
+    border-top: 1px solid rgba(99, 102, 241, 0.5);
     border-radius: 16px;
     padding: 1.5rem 1.75rem;
     max-width: 680px;
     width: 90%;
     margin: 1.5rem auto;
-    box-shadow: var(--card-shadow), 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 40px rgba(99, 102, 241, 0.04);
+    box-shadow: var(--welcome-shadow);
     animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) ease-out;
 }
 
@@ -487,10 +717,10 @@ body {
 
 .brand-badge {
     display: inline-block;
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.14);
     border: 1px solid rgba(99, 102, 241, 0.35);
     border-radius: 30px;
-    color: #c7d2fe;
+    color: var(--accent-highlight);
     font-size: 0.68rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -503,13 +733,13 @@ body {
     font-size: 1.35rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #ffffff 40%, #c7d2fe 100%);
+    background: var(--heading-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .project-overview {
-    color: #d1d5db; /* Lighter text color for better contrast */
+    color: var(--text-overview);
     font-size: 0.88rem;
     line-height: 1.5;
     max-width: 600px;
@@ -517,7 +747,7 @@ body {
 }
 
 .project-overview strong {
-    color: #c7d2fe;
+    color: var(--accent-highlight);
     font-weight: 600;
 }
 
@@ -529,27 +759,27 @@ body {
 }
 
 .feature-item {
-    background: rgba(7, 9, 19, 0.5); /* Recessed darker panel background */
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Distinct border */
+    background: var(--bg-recessed);
+    border: 1px solid var(--border-subtle);
     border-radius: 10px;
     padding: 0.85rem 1rem;
     transition: all 0.25s ease;
 }
 
 .feature-item:hover {
-    background: rgba(7, 9, 19, 0.7);
+    background: var(--bg-recessed-hover);
     border-color: rgba(99, 102, 241, 0.35);
     transform: translateY(-1px);
 }
 
 .feature-item.full-width {
     grid-column: span 2;
-    background: rgba(99, 102, 241, 0.02); /* Tinted full-width item */
+    background: rgba(99, 102, 241, 0.03);
     border-color: rgba(99, 102, 241, 0.2);
 }
 
 .feature-item.full-width:hover {
-    background: rgba(99, 102, 241, 0.04);
+    background: rgba(99, 102, 241, 0.06);
     border-color: rgba(99, 102, 241, 0.35);
 }
 
@@ -570,12 +800,12 @@ body {
 .feature-item h4 {
     font-size: 0.88rem;
     font-weight: 600;
-    color: #f3f4f6;
+    color: var(--text-primary);
 }
 
 .feature-item p {
     font-size: 0.78rem;
-    color: #9ca3af;
+    color: var(--text-secondary);
     line-height: 1.4;
     margin-bottom: 0 !important;
 }
@@ -588,7 +818,7 @@ body {
 .suggestion-header {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #f3f4f6;
+    color: var(--text-primary);
     margin-bottom: 0.75rem !important;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -601,8 +831,8 @@ body {
 }
 
 .suggestion-action-card {
-    background: rgba(7, 9, 19, 0.5); /* Recessed dark panels */
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Clear border */
+    background: var(--bg-recessed);
+    border: 1px solid var(--border-subtle);
     border-radius: 10px;
     padding: 0.75rem 0.85rem;
     cursor: pointer;
@@ -611,7 +841,7 @@ body {
 }
 
 .suggestion-action-card:hover {
-    background: rgba(99, 102, 241, 0.08); /* Highlight on hover */
+    background: rgba(99, 102, 241, 0.09);
     border-color: var(--accent-primary);
     transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
@@ -620,18 +850,18 @@ body {
 .suggestion-action-title {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #c7d2fe;
+    color: var(--accent-highlight);
     margin-bottom: 0.25rem;
 }
 
 .suggestion-action-desc {
     font-size: 0.72rem;
-    color: #9ca3af;
+    color: var(--text-secondary);
     line-height: 1.35;
 }
 
 .suggestion-action-card:hover .suggestion-action-title {
-    color: white;
+    color: var(--text-primary);
 }
 
 /* --- Message Bubbles --- */
@@ -669,11 +899,12 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     border-bottom-left-radius: 4px;
+    box-shadow: var(--card-shadow);
 }
 
 /* Markdown styling inside bubbles */
 .message-content pre {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--code-block-bg);
     border-radius: 8px;
     padding: 0.75rem;
     overflow-x: auto;
@@ -683,7 +914,7 @@ body {
 .message-content code {
     font-family: Courier, monospace;
     font-size: 0.85rem;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--inline-code-bg);
     padding: 0.125rem 0.25rem;
     border-radius: 4px;
 }
@@ -733,30 +964,30 @@ body {
 
 /* --- Input Area --- */
 .chat-footer {
-    padding: 0.85rem 1.5rem 1.5rem 1.5rem; /* Increased bottom padding to lift it up */
+    padding: 0.85rem 1.5rem 1.5rem 1.5rem;
     background: transparent;
     width: 100%;
 }
 
 .input-container {
     display: flex;
-    max-width: 700px; /* Reduced width to match the cockpit alignment */
-    margin: 0 auto; /* Center the input bar */
+    max-width: 700px;
+    margin: 0 auto;
     width: 100%;
     background: var(--bg-panel);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-color);
-    border-radius: 12px; /* Slightly tighter rounding */
-    padding: 0.45rem 0.65rem; /* Reduced container padding */
+    border-radius: 12px;
+    padding: 0.45rem 0.65rem;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06); /* Indigo glow + border outline */
+    box-shadow: var(--input-shadow);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .input-container:focus-within {
-    border-color: rgba(99, 102, 241, 0.5); /* Indigo border glow */
-    background: rgba(16, 20, 38, 0.7); /* Deepen background on focus */
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.3), 0 0 0 1px rgba(99, 102, 241, 0.4); /* Stronger glowing shadow */
+    border-color: rgba(99, 102, 241, 0.5);
+    background: var(--input-focus-bg);
+    box-shadow: var(--input-focus-shadow);
 }
 
 .chat-input {
@@ -766,8 +997,8 @@ body {
     border: none !important;
     color: var(--text-primary) !important;
     font-family: inherit;
-    font-size: 0.9rem; /* Reduced font size from 0.95rem */
-    padding: 0.25rem 0.4rem; /* Reduced input padding from 0.4rem 0.5rem */
+    font-size: 0.9rem;
+    padding: 0.25rem 0.4rem;
     resize: none;
     max-height: 180px;
     min-height: 24px;
@@ -783,8 +1014,8 @@ body {
     background: var(--accent-primary);
     color: white;
     border: none;
-    border-radius: 8px; /* Tighter button rounding */
-    padding: 0.45rem; /* Reduced padding from 0.55rem */
+    border-radius: 8px;
+    padding: 0.45rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -822,23 +1053,21 @@ body {
     40%, 80% { transform: translateX(6px); }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
+/* Custom Scrollbar Fallback for Legacy WebKit */
+@supports not (scrollbar-color: auto) {
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
 
-::-webkit-scrollbar-track {
-    background: transparent;
-}
+    ::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+    }
 
-::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.15);
+    ::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 10px;
+    }
 }
 
 /* ==========================================
@@ -851,7 +1080,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(4, 5, 11, 0.7);
+    background: var(--modal-overlay-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: flex;
@@ -919,13 +1148,13 @@ body {
 }
 
 .modal-btn.cancel-btn {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-surface-subtle);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
 }
 
 .modal-btn.cancel-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-surface-hover);
     color: var(--text-primary);
 }
 

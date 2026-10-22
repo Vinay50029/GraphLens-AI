@@ -4,11 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title>Sign Up - Intelligent Research Assistant</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <script>
+        {
+            const savedScheme = localStorage.getItem("color-scheme");
+            if (savedScheme === "light" || savedScheme === "dark") {
+                document.querySelector('meta[name="color-scheme"]').content = savedScheme;
+                document.documentElement.classList.add(`theme-${savedScheme}`);
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'style.css' %}?v=1.4">
 </head>
 <body>
     <div class="auth-container">
+        <button type="button" id="theme-toggle-btn" class="theme-toggle-btn auth-theme-toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+            <span id="theme-toggle-icon"></span>
+            <span id="theme-toggle-label">Theme</span>
+        </button>
+
         <div class="auth-card">
             <div class="auth-header">
                 <h1>Create Account</h1>
@@ -46,5 +61,47 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const sunIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+        const moonIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+
+        function getEffectiveTheme() {
+            const saved = localStorage.getItem("color-scheme");
+            if (saved === "light" || saved === "dark") return saved;
+            return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+
+        function applyThemeUI(theme) {
+            const iconEl = document.getElementById("theme-toggle-icon");
+            const labelEl = document.getElementById("theme-toggle-label");
+            if (!iconEl || !labelEl) return;
+            if (theme === "dark") {
+                iconEl.innerHTML = sunIcon;
+                labelEl.textContent = "Light Mode";
+            } else {
+                iconEl.innerHTML = moonIcon;
+                labelEl.textContent = "Dark Mode";
+            }
+        }
+
+        function toggleTheme() {
+            const current = getEffectiveTheme();
+            const next = current === "dark" ? "light" : "dark";
+            localStorage.setItem("color-scheme", next);
+            document.querySelector('meta[name="color-scheme"]').content = next;
+            document.documentElement.classList.remove("theme-light", "theme-dark");
+            document.documentElement.classList.add(`theme-${next}`);
+            applyThemeUI(next);
+        }
+
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+            if (!localStorage.getItem("color-scheme")) {
+                applyThemeUI(getEffectiveTheme());
+            }
+        });
+
+        applyThemeUI(getEffectiveTheme());
+    </script>
 </body>
 </html>

@@ -21,18 +21,54 @@ def document_node(state: AgentState):
 
     active_documents = state.get("active_documents") or []
     
+    import os
+
     # 1. Detect if the user named explicit file name(s) in the question
     filename_matches = re.findall(r"([\w\-. ]+\.(?:pdf|txt))\b", question, flags=re.IGNORECASE)
     explicit_file_names = [f.strip() for f in filename_matches] if filename_matches else []
     
+    # Check for matching active_documents by base name (without extension) if no exact extensions matched
+    if not explicit_file_names and active_documents:
+        for doc in active_documents:
+            base_name = os.path.splitext(doc)[0]
+            pattern = r"\b" + re.escape(base_name) + r"\b"
+            if re.search(pattern, question, flags=re.IGNORECASE):
+                explicit_file_names.append(doc)
+
     scoped_file_names = explicit_file_names if explicit_file_names else active_documents
 
-    # 2. Get retriever based on active/explicit documents, or globally if none is active
-    retriever = get_retriever(user_id, scoped_file_names) if user_id else None
+    # Clean the query by stripping explicit filename references to avoid vector search bias
+    clean_question = question
+    for fname in scoped_file_names:
+        clean_question = re.sub(re.escape(fname), "", clean_question, flags=re.IGNORECASE)
+        base_name = os.path.splitext(fname)[0]
+        clean_question = re.sub(r"\b" + re.escape(base_name) + r"\b", "", clean_question, flags=re.IGNORECASE)
     
+    clean_question = re.sub(r"\b(using|of|in|about|from|the|with|compare|pdfs|pdf)\b", "", clean_question, flags=re.IGNORECASE)
+    clean_question = re.sub(r"\s+", " ", clean_question).strip()
+    if not clean_question:
+        clean_question = question
+
+    # 2. Retrieve documents from the active vector store
     docs = []
-    if retriever:
-        docs = retriever.invoke(question)
+    if user_id:
+        if len(scoped_file_names) > 1:
+            # Query each file separately to ensure balanced context representation
+            for fname in scoped_file_names:
+                file_retriever = get_retriever(user_id, fname)
+                if file_retriever:
+                    file_retriever.search_kwargs["k"] = max(3, 12 // len(scoped_file_names))
+                    try:
+                        docs.extend(file_retriever.invoke(clean_question))
+                    except Exception as e:
+                        print(f"Error retrieving from file {fname}: {e}")
+        else:
+            retriever = get_retriever(user_id, scoped_file_names)
+            if retriever:
+                try:
+                    docs = retriever.invoke(clean_question)
+                except Exception as e:
+                    print(f"Error invoking retriever: {e}")
 
     # 3. Construct context text from retrieved document chunks, tagging each with its source
     if docs:

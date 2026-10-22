@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*
+!.env.example
 .venv
 venv/
 ENV/
@@ -11,15 +12,29 @@ venv.bak/
 */.env
 */.env.local
 */.env.*
+!*/.env.example
 
 # Project Data & Vector DB
 data/
 chroma_db/
+db/
+*/db/
+evals/
+*/evals/
+staticfiles/
+*/staticfiles/
 *.pdf
 *.sqlite3
 media/
 */media/
 **/media/
+
+# LaTeX build artifacts
+*.aux
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
 
 # Python caches
 __pycache__/
@@ -58,3 +73,13 @@ Thumbs.db
 
 # React Frontend
 research-assistant/frontend/
+
+# Papers, Academic Reports & Large Media
+paper/
+report/
+IEEE-conference-template-062824/
+literature_review.md
+main.*
+docs/*.mov
+gragh-ai-prep/
+*.mov

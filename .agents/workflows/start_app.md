@@ -7,4 +7,7 @@ description: Start the Intelligent Research Assistant application
    - Activate the virtual environment.
    - Start the server.
 // turbo
-2. Run `cd research-assistant/backend && source venv/bin/activate && python manage.py runserver`
+2. Run `ollama run llama3.1`
+3. Run 'cd "/Users/gattuvinaykumar/Documents/intelligent Research Assistant/research-assistant/backend"'
+4. Run 'source venv/bin/activate'
+5. Run 'python manage.py runserver'

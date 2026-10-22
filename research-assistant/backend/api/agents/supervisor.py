@@ -1,3 +1,4 @@
+import re
 from typing import Annotated, Literal
 import operator
 from typing_extensions import TypedDict
@@ -67,9 +68,9 @@ def _looks_like_file_query(question: str) -> bool:
     q = question.lower()
     
     # 1. Action verb + File extension (e.g. "create notes.txt")
-    has_ext = any(ext in q for ext in [".txt", ".pdf"])
+    has_ext = any(ext in q for ext in [".txt", ".pdf", ".docx"])
     file_actions = ["create", "write", "save", "delete", "remove", "read", "view", "update", "edit", "make", "list", "append", "add", "overwrite"]
-    if has_ext and any(action in q for action in file_actions):
+    if has_ext and any(re.search(r'\b' + action + r'\b', q) for action in file_actions):
         return True
         
     # 2. General file/folder phrase indicators
@@ -91,18 +92,20 @@ def _looks_like_file_query(question: str) -> bool:
         "what files",
         "files in my workspace",
         "show my files",
-        "list all files"
+        "list all files",
+        "show all files",
+        "storage directory"
     ]
     if any(hint in q for hint in file_hints):
         return True
         
-    # 3. Action verb + target pronouns/words (e.g. "delete the selected file", "read it", "update this")
-    targets = ["file", "it", "this", "content", "data"]
-    if any(t in q for t in targets) and any(action in q for action in file_actions):
+    # 3. Action verb + target phrases (e.g. "delete the selected file", "read the file", "update the file")
+    targets = ["the file", "this file", "selected file", "workspace file", "local file"]
+    if any(t in q for t in targets) and any(re.search(r'\b' + action + r'\b', q) for action in file_actions):
         return True
         
     # 4. Standalone distinctive file-management action verbs
-    distinct_verbs = ["append", "overwrite", "create file", "delete file", "read file", "write file"]
+    distinct_verbs = ["append to", "overwrite", "create file", "delete file", "read file", "write to file", "create notes", "delete draft"]
     if any(verb in q for verb in distinct_verbs):
         return True
         

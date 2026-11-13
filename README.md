@@ -56,7 +56,7 @@
 * **Attachment Delivery**: Sends workspace documents, PDFs, and generated reports directly to any recipient email.
 * **Sender Identity**: Dispatches via central SMTP relay while attaching user identification and setting `Reply-To` headers.
 ### 💻 Hybrid AI Engine (Cloud + Local Offline)
-* **Groq Cloud Engine**: High-speed inference using `llama-3.1-8b-instant` (or configurable via `GROQ_MODEL`).
+* **Groq Cloud Engine**: High-speed inference using `openai/gpt-oss-120b` (or configurable via `GROQ_MODEL`).
 * **Local Offline Engine**: 100% private, local inference using **Ollama** (`llama3.1`).
 
 ---
@@ -74,7 +74,7 @@
 * **Backend**: Django & Django REST Framework (DRF).
 * **AI Orchestration**: LangChain & LangGraph (Supervisor multi-agent state graph).
 * **AI Inference (Hybrid)**:
-  * **Cloud**: Groq Cloud API (`llama-3.1-8b-instant` or configurable via `GROQ_MODEL`).
+  * **Cloud**: Groq Cloud API (`openai/gpt-oss-120b` or configurable via `GROQ_MODEL`).
   * **Local / Offline**: Ollama (`llama3.1`).
 * **Embeddings**: HuggingFace (`all-MiniLM-L6-v2`) & Pinecone Embeddings (`llama-text-embed-v2`).
 * **Vector Databases**: Pinecone Serverless (cloud) & ChromaDB (local persistent).

@@ -8,7 +8,7 @@ def get_llm(temperature: float = 0.0):
     """
     Returns an LLM instance.
     If USE_LOCAL_LLM=True, returns a ChatOllama instance pointing to local Ollama.
-    Otherwise, returns a ChatGroq instance using GROQ_API_KEY from the environment (defaults to llama-3.1-8b-instant or GROQ_MODEL).
+    Otherwise, returns a ChatGroq instance using GROQ_API_KEY from the environment (defaults to openai/gpt-oss-120b or GROQ_MODEL).
     """
     use_local = os.environ.get("USE_LOCAL_LLM", "False").lower() in ("true", "1", "yes")
     
@@ -31,7 +31,7 @@ def get_llm(temperature: float = 0.0):
     if not groq_api_key:
         raise ValueError("GROQ_API_KEY is not set in your .env file!")
     
-    groq_model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant")
+    groq_model = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
     return ChatGroq(
         model=groq_model,
         temperature=temperature,

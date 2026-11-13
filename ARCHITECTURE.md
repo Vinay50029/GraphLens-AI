@@ -91,7 +91,7 @@ The backend uses **LangGraph** to build an autonomous multi-agent state graph:
 * **Backend**: Django & Django REST Framework (DRF).
 * **AI Orchestration**: LangChain & LangGraph (StateGraph multi-agent flow).
 * **LLM Engine (Hybrid)**:
-  * **Cloud**: Groq API (`llama-3.3-70b-versatile`).
+  * **Cloud**: Groq API (`llama-3.1-8b-instant` or configurable via `GROQ_MODEL`).
   * **Local / Offline**: Ollama (`llama3.1`).
 * **Embeddings**: HuggingFace (`all-MiniLM-L6-v2`) & Pinecone Embeddings (`llama-text-embed-v2`).
 * **Vector Databases**:
